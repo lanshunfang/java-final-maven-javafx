@@ -1,6 +1,7 @@
 package org.openjfx;
 
 import java.awt.Desktop;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -16,6 +17,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.openjfx.core.MsIsConstant.*;
+
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * JavaFX App
@@ -40,24 +43,28 @@ public class App extends Application {
 
 
     private static void configureFileChooser(
-            final FileChooser fileChooser) {
+            final FileChooser fileChooser
+    ) {
         fileChooser.setTitle("Choose Pictures");
 //        fileChooser.setInitialDirectory(
 //                new File(System.getProperty("user.home"))
 //        );
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("All Images", "*.*"),
-                new FileChooser.ExtensionFilter("JPG", "*.jpg"),
-                new FileChooser.ExtensionFilter("PNG", "*.png")
-        );
+
+        FileChooser.ExtensionFilter fileExtensions =new FileChooser.ExtensionFilter("Images","*.jpg", "*.png");
+        fileChooser.getExtensionFilters().add(fileExtensions);
+
+//        fileChooser.getExtensionFilters().addAll(
+//                new FileChooser.ExtensionFilter("All Images", "*.*"),
+//                new FileChooser.ExtensionFilter("JPG", "*.jpg"),
+//                new FileChooser.ExtensionFilter("PNG", "*.png")
+//        );
     }
 
     static List<File> openFileChooser() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
-        fileChooser.showOpenDialog(stage);
-
         configureFileChooser(fileChooser);
+
         return fileChooser.showOpenMultipleDialog(stage);
 
     }

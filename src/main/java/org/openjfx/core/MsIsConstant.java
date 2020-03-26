@@ -1,5 +1,9 @@
 package org.openjfx.core;
 
+import org.openjfx.App;
+
+import java.net.URL;
+
 public class MsIsConstant {
     public enum ComponentEnum {
         ImageUpload("ImageUpload"),
@@ -20,7 +24,8 @@ public class MsIsConstant {
 
     public enum PathEnum {
         StyleCss("style.css"),
-        ImagePlaceholder("images/placeholder.css");
+        ClosePng("images/close.png"),
+        ImagePlaceholder("images/placeholder.png");
 
         public final String path;
 
@@ -30,7 +35,10 @@ public class MsIsConstant {
 
         @Override
         public String toString() {
-            return this.path;
+            return App.class.getResource(this.path).toString();
+        }
+        public URL toURL() {
+            return App.class.getResource(this.path);
         }
     }
 

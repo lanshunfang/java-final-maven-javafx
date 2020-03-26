@@ -1,3 +1,9 @@
-.button {
-    -fx-text-fill: blue;
+.center-align {
+    -fx-alignment: center;
+}
+.padding-10 {
+    -fx-padding: 10px;
+}
+.gap-margin {
+    -fx-padding: 5px;
 }
