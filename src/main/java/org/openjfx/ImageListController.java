@@ -1,10 +1,11 @@
 package org.openjfx;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javafx.embed.swing.SwingFXUtils;
 
@@ -12,6 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.image.*;
 import javafx.scene.layout.GridPane;
@@ -55,15 +57,11 @@ public class ImageListController {
         int columnIndex = 0;
         int rowIndex = 0;
 
-        int imageWidth = 100;
-        int imageHeight = 100;
-
         for (int fileIndex = 0; fileIndex < imageFileList.size(); fileIndex++) {
 
             File file = imageFileList.get(fileIndex);
 
             try {
-                Image image = SwingFXUtils.toFXImage(ImageIO.read(file), null);
 
                 if (columnIndex >= columnCount) {
                     rowIndex++;
@@ -73,51 +71,19 @@ public class ImageListController {
                 StackPane stackPane = new StackPane();
                 stackPane.getStyleClass().add("grid-cell");
 
-                ImageView imageView = new ImageView();
+                Node deleteHandler = getDeleteHandler(file);
 
-                if (columnIndex == 0) {
-                    imageView.getStyleClass().add("first-column");
-                }
-                if (rowIndex == 0) {
-                    imageView.getStyleClass().add("first-row");
-                }
-
-                imageView.setImage(
-                        image
+                stackPane.getChildren().add(
+                        this.getImageView(columnIndex, rowIndex, file)
                 );
 
-                configImageView(imageView, imageHeight, imageWidth);
-
-                Button removeBtn = new Button("Remove");
-
-                ImageView btnImageView = new ImageView(
-                        new Image(
-                                PathEnum.ClosePng.toString()
-
-                        )
-                );
-
-                configImageView(btnImageView, 16, 16);
-
-                btnImageView.getStyleClass().add("delete-image-btn");
-
-                removeBtn.setGraphic(
-
-                        btnImageView
-                );
-
-                {
-                    removeBtn.setOnAction(deleteEvent -> {
-                        imageFileList.remove(file);
-                        this.showImages();
-                    });
+                if (deleteHandler != null) {
+                    stackPane.getChildren().add(
+                            deleteHandler
+                    );
                 }
-
-                stackPane.getChildren().addAll(imageView, removeBtn);
 
                 gridPane.add(stackPane, columnIndex, rowIndex);
-//                gridPane.add(imageView, columnIndex, rowIndex);
-//                gridPane.add(removeBtn, columnIndex, rowIndex);
 
                 columnIndex++;
 
@@ -127,11 +93,71 @@ public class ImageListController {
         }
     }
 
+    private Node getDeleteHandler(File file) {
+
+        Button removeBtn = new Button("Remove");
+
+        ImageView btnImageView = new ImageView(
+                new Image(
+                        PathEnum.ClosePng.toString()
+
+                )
+        );
+
+        configImageView(btnImageView, 16, 16);
+
+        btnImageView.getStyleClass().add("delete-image-btn");
+
+        removeBtn.setGraphic(
+                btnImageView
+        );
+
+        {
+            removeBtn.setOnAction(deleteEvent -> {
+                imageFileList.remove(file);
+                this.showImages();
+            });
+        }
+
+        return removeBtn;
+    }
+
+    private ImageView getImageView(int columnIndex, int rowIndex, File file) {
+        int imageWidth = 100;
+        int imageHeight = 100;
+
+        ImageView imageView = new ImageView();
+        Image image = this.getDefaultImage();
+        try {
+            image = SwingFXUtils.toFXImage(ImageIO.read(file), null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (columnIndex == 0) {
+            imageView.getStyleClass().add("first-column");
+        }
+        if (rowIndex == 0) {
+            imageView.getStyleClass().add("first-row");
+        }
+
+        imageView.setImage(
+                image
+        );
+
+        configImageView(imageView, imageHeight, imageWidth);
+        return imageView;
+    }
+
+    private Image getDefaultImage() {
+        return new Image(PathEnum.ImagePlaceholder.toString());
+    }
+
     private void setDefaultImagePlaceholder() {
 
         gridPane.add(
                 configImageView(new ImageView(
-                                new Image(PathEnum.ImagePlaceholder.toString())
+                                this.getDefaultImage()
                         ),
                         100,
                         100
@@ -159,9 +185,29 @@ public class ImageListController {
             return;
         }
 
-        this.imageFileList.addAll(files);
+        this.imageFileList.addAll(this.filterValidImageFiles(files));
 
         this.showImages();
+
+    }
+
+    private List<File> filterValidImageFiles(List<File> files) {
+
+        return files.stream().filter(file -> {
+
+            try {
+                String mimetype = Files.probeContentType(file.toPath());
+//mimetype should be something like "image/png"
+
+                if (mimetype != null && mimetype.split("/")[0].equals("image")) {
+                    return true;
+                }
+                return false;
+            } catch (Exception e) {
+                return false;
+            }
+
+        }).collect(Collectors.toList());
 
     }
 

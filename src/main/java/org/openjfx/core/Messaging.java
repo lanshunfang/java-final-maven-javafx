@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Messaging {
-    private static Channel message;
+    private static Channel channel;
 
     static Channel getInstance() {
-        if (message == null) {
-            message = new MyChannel();
+        if (channel == null) {
+            channel = new MyChannel();
         }
-        return message;
+        return channel;
     }
 }
 
