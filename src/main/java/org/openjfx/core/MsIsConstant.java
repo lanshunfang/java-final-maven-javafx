@@ -6,8 +6,8 @@ import java.net.URL;
 
 public class MsIsConstant {
     public enum ComponentEnum {
-        ImageUpload("ImageUpload"),
-        ImageDownload("ImageDownload");
+        ImageList("ImageList"),
+        ImageDetail("ImageDetail");
 
         public final String resourceName;
 

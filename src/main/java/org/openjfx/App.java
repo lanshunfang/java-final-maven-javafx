@@ -31,7 +31,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML(ComponentEnum.ImageUpload));
+        scene = new Scene(loadFXML(ComponentEnum.ImageList));
         stage.setScene(scene);
         stage.show();
         this.stage = stage;

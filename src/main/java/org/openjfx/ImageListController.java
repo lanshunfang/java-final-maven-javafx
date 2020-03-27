@@ -21,7 +21,7 @@ import org.openjfx.core.MsIsConstant.*;
 
 import javax.imageio.ImageIO;
 
-public class ImageUploadController {
+public class ImageListController {
 
 
     @FXML
@@ -34,12 +34,12 @@ public class ImageUploadController {
 
     @FXML
     private void switchToDownload() throws IOException {
-        App.setRoot(ComponentEnum.ImageUpload);
+        App.setRoot(ComponentEnum.ImageList);
     }
 
     private ArrayList<File> imageFileList = new ArrayList<>();
 
-    public ImageUploadController() {
+    public ImageListController() {
     }
 
     private void showImages() {
@@ -113,8 +113,7 @@ public class ImageUploadController {
                     });
                 }
 
-                stackPane.getChildren().addAll(imageView);
-                stackPane.getChildren().addAll(removeBtn);
+                stackPane.getChildren().addAll(imageView, removeBtn);
 
                 gridPane.add(stackPane, columnIndex, rowIndex);
 //                gridPane.add(imageView, columnIndex, rowIndex);
