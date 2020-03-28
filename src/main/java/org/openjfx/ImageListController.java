@@ -18,12 +18,9 @@ import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import org.openjfx.core.*;
 import org.openjfx.core.MessageObject.*;
-import org.openjfx.core.Messaging;
-import org.openjfx.core.Channel;
-import org.openjfx.core.MsIsConstant;
 import org.openjfx.core.MsIsConstant.*;
-import org.openjfx.core.Router;
 
 import javax.imageio.ImageIO;
 
@@ -36,7 +33,7 @@ public class ImageListController {
     @FXML
     public ImageView imageUploadPreviewContainerEl;
     @FXML
-    public Image imageUploadPreviewEl;
+    public Image imagePlaceholder;
 
     @FXML
     private void switchToDownload() throws IOException {
@@ -79,8 +76,19 @@ public class ImageListController {
 
                 Node deleteHandler = getDeleteHandler(file);
 
+                StringBuilder styleClasses = new StringBuilder();
+                if (columnIndex == 0) {
+                    styleClasses.append("first-column");
+                }
+                if (rowIndex == 0) {
+                    styleClasses.append("first-row");
+                }
+
+                ImageView imageView = ImageUtil.getImageViewByFile(file, styleClasses.toString(), 100, 100);
+                this.navigateToDetailOnClick(imageView, file);
+
                 stackPane.getChildren().add(
-                        this.getImageView(columnIndex, rowIndex, file)
+                        imageView
                 );
 
                 if (deleteHandler != null) {
@@ -110,7 +118,7 @@ public class ImageListController {
                 )
         );
 
-        configImageView(btnImageView, 16, 16);
+        ImageUtil.configImageView(btnImageView, 16, 16);
 
         btnImageView.getStyleClass().add("delete-image-btn");
 
@@ -130,35 +138,6 @@ public class ImageListController {
 //        return null;
     }
 
-    private ImageView getImageView(int columnIndex, int rowIndex, File file) {
-        int imageWidth = 100;
-        int imageHeight = 100;
-
-        ImageView imageView = new ImageView();
-        Image image = this.getDefaultImage();
-        try {
-            image = SwingFXUtils.toFXImage(ImageIO.read(file), null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (columnIndex == 0) {
-            imageView.getStyleClass().add("first-column");
-        }
-        if (rowIndex == 0) {
-            imageView.getStyleClass().add("first-row");
-        }
-
-        imageView.setImage(
-                image
-        );
-
-        configImageView(imageView, imageHeight, imageWidth);
-        this.navigateToDetailOnClick(imageView, file);
-
-        return imageView;
-    }
-
     private void navigateToDetailOnClick(ImageView imageView, File file) {
         imageView.addEventFilter(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             setFileToView(file);
@@ -170,15 +149,11 @@ public class ImageListController {
         messaging.postMessage(SubjectEnum.ImageIdToShow, file);
     }
 
-    private Image getDefaultImage() {
-        return new Image(PathEnum.ImagePlaceholder.toString());
-    }
-
     private void setDefaultImagePlaceholder() {
 
         gridPane.add(
-                configImageView(new ImageView(
-                                this.getDefaultImage()
+                ImageUtil.configImageView(new ImageView(
+                                ImageUtil.getDefaultImage()
                         ),
                         100,
                         100
@@ -187,14 +162,6 @@ public class ImageListController {
                 0
         );
 
-    }
-
-    private ImageView configImageView(ImageView imageView, int imageHeight, int imageWidth) {
-        imageView.setPreserveRatio(true);
-        imageView.setFitHeight(imageHeight);
-        imageView.setFitWidth(imageWidth);
-        imageView.setSmooth(true);
-        return imageView;
     }
 
     @FXML

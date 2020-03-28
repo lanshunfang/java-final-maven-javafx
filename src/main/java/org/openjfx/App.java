@@ -25,21 +25,32 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class App extends Application {
 
-    static Desktop desktop = Desktop.getDesktop();
     private static Stage stage;
     private static Scene scene;
 
+    private static ScreenController screenController;
+
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML(ComponentEnum.ImageList));
+        scene = new Scene(loadFXML(ComponentEnum.ImageList), 800, 600);
+
+
+        ScreenController screenController = new ScreenController(scene);
+        screenController.addScreen(ComponentEnum.ImageList.toString(), loadFXML(ComponentEnum.ImageList));
+        screenController.addScreen(ComponentEnum.ImageDetail.toString(), loadFXML(ComponentEnum.ImageDetail));
+        screenController.activate(ComponentEnum.ImageList.toString());
+
+        this.screenController = screenController;
+
         stage.setScene(scene);
         stage.show();
         this.stage = stage;
+
     }
 
     public static void setRoot(ComponentEnum componentEnum) {
         try {
-            scene.setRoot(loadFXML(componentEnum));
+            screenController.activate(componentEnum.toString());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -51,18 +62,10 @@ public class App extends Application {
             final FileChooser fileChooser
     ) {
         fileChooser.setTitle("Choose Pictures");
-//        fileChooser.setInitialDirectory(
-//                new File(System.getProperty("user.home"))
-//        );
 
         FileChooser.ExtensionFilter fileExtensions =new FileChooser.ExtensionFilter("Images","*.jpg", "*.png");
         fileChooser.getExtensionFilters().add(fileExtensions);
 
-//        fileChooser.getExtensionFilters().addAll(
-//                new FileChooser.ExtensionFilter("All Images", "*.*"),
-//                new FileChooser.ExtensionFilter("JPG", "*.jpg"),
-//                new FileChooser.ExtensionFilter("PNG", "*.png")
-//        );
     }
 
     static List<File> openFileChooser() {
@@ -76,8 +79,9 @@ public class App extends Application {
 
     private static Parent loadFXML(ComponentEnum componentEnum) throws IOException {
         String componentName = componentEnum.toString();
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(componentName + "/" + componentName + ".fxml"));
-        return fxmlLoader.load();
+        return FXMLLoader.load(App.class.getResource(componentName + "/" + componentName + ".fxml"));
+//        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(componentName + "/" + componentName + ".fxml"));
+//        return fxmlLoader.load();
     }
 
     public static void main(String[] args) {

@@ -24,6 +24,9 @@ public class Channel implements IChannel {
 
     @Override
     public Unsub onMessage(MessageObject.SubjectEnum subjectEnum, LambdaInvoke callback, boolean isDiscardHistoryMessage) {
+        if (callback == null) {
+            return null;
+        }
         if (!isDiscardHistoryMessage) {
             Object lastMessageData = this.lastMessage.get(subjectEnum);
             if (lastMessageData != null) {
@@ -32,11 +35,19 @@ public class Channel implements IChannel {
         }
 
         ArrayList<LambdaInvoke> listenersForTheSubject = this.listeners.get(subjectEnum);
+        if (listenersForTheSubject == null) {
+            listenersForTheSubject = new ArrayList<>();
+        }
         listenersForTheSubject.remove(callback);
         listenersForTheSubject.add(callback);
         this.listeners.put(subjectEnum, listenersForTheSubject);
 
         return (Unsub) () -> this.listeners.remove(subjectEnum, callback);
+
+    }
+
+    public Unsub onMessage(MessageObject.SubjectEnum subjectEnum, LambdaInvoke callback) {
+       return onMessage(subjectEnum, callback, false);
 
     }
 

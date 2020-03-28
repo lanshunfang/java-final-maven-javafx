@@ -1,13 +1,31 @@
 package org.openjfx;
 
-import java.io.IOException;
+import java.io.File;
+
 import javafx.fxml.FXML;
-import org.openjfx.core.MsIsConstant;
+import javafx.scene.layout.HBox;
+import org.openjfx.core.*;
 
 public class ImageDetailController {
 
+    private Channel messaging = Messaging.getInstance();
+
     @FXML
-    private void switchToUpload() throws IOException {
-        App.setRoot(MsIsConstant.ComponentEnum.ImageList);
+    public void switchToList() {
+        Router.navigateToListView();
+    }
+
+    @FXML
+    public HBox imageViewContainer;
+
+    @FXML
+    public void initialize() {
+        messaging.onMessage(MessageObject.SubjectEnum.ImageIdToShow, (file) -> {
+
+            this.imageViewContainer.getChildren().clear();
+            this.imageViewContainer.getChildren().add(
+                    ImageUtil.getImageViewByFile((File) file, "", 600, 400)
+            );
+        });
     }
 }

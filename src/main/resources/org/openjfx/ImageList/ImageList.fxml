@@ -11,41 +11,47 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.control.Label?>
-<VBox styleClass="center-align" minHeight="300.0" minWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageListController">
+<?import javafx.scene.control.ScrollPane?>
+<VBox styleClass="center-align" minHeight="300.0" minWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageListController">
     <children>
 
         <HBox styleClass="center-align">
             <children>
-                <GridPane fx:id="gridPane" styleClass="grid">
-                    <children>
-                        <ImageView fitHeight="100.0" fitWidth="100.0">
-                            <image>
-                                <Image fx:id="imageUploadPreviewEl" url="@../images/placeholder.png" />
-                            </image>
-                        </ImageView>
+                <ScrollPane pannable="true">
 
-                    </children>
-               <columnConstraints>
-                  <ColumnConstraints />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-               </rowConstraints>
+                    <GridPane fx:id="gridPane" styleClass="grid">
+                        <children>
+                            <ImageView fitHeight="100.0" fitWidth="100.0">
+                                <image>
+                                    <Image fx:id="imagePlaceholder" url="@../images/placeholder.png"/>
+                                </image>
+                            </ImageView>
+
+                        </children>
+                        <columnConstraints>
+                            <ColumnConstraints/>
+                        </columnConstraints>
+                        <rowConstraints>
+                            <RowConstraints/>
+                        </rowConstraints>
 
 
-                </GridPane>
+                    </GridPane>
+                </ScrollPane>
+
             </children>
         </HBox>
 
         <Label styleClass="gap-margin" text=" "></Label>
 
         <Button styleClass="padding-10"
-                onAction="#onPickImageAction" text="Pick image(s)" />
+                onAction="#onPickImageAction" text="Pick image(s)"/>
 
     </children>
 
     <stylesheets>
-        <URL value="@../styles.css" />
-        <URL value="@ImageList.css" />
+        <URL value="@../styles.css"/>
+        <URL value="@ImageList.css"/>
     </stylesheets>
 </VBox>

@@ -14,9 +14,6 @@ public class Messaging {
     }
 }
 
-interface LambdaInvoke {
-    void invoke(Object obj);
-}
 
 interface Unsub {
     void unsub();
