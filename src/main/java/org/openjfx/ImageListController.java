@@ -7,13 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javafx.embed.swing.SwingFXUtils;
-
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -22,34 +20,42 @@ import org.openjfx.core.*;
 import org.openjfx.core.MessageObject.*;
 import org.openjfx.core.MsIsConstant.*;
 
-import javax.imageio.ImageIO;
-
 public class ImageListController {
-
 
     @FXML
     public GridPane gridPane;
 
     @FXML
-    public ImageView imageUploadPreviewContainerEl;
-    @FXML
     public Image imagePlaceholder;
-
     @FXML
-    private void switchToDownload() throws IOException {
-        App.setRoot(ComponentEnum.ImageList);
-    }
+    public Button editButton;
 
     private ArrayList<File> imageFileList = new ArrayList<>();
 
+    private int maxImageFiles = 50;
+
     private Channel messaging = Messaging.getInstance();
 
-    public ImageListController() {
+    @FXML
+    Label maxImageLabel;
+
+    private boolean isEditing;
+
+    @FXML
+    public void initialize() {
+        this.setMaxImageFiles();
+        this.toggleEditButton();
+    }
+
+    private void setMaxImageFiles() {
+        this.maxImageLabel.setText("Maximum images: " + maxImageFiles);
     }
 
     private void showImages() {
 
         gridPane.getChildren().clear();
+
+        this.toggleEditButton();
 
         if (imageFileList.size() == 0) {
             setDefaultImagePlaceholder();
@@ -108,6 +114,10 @@ public class ImageListController {
     }
 
     private Node getDeleteHandler(File file) {
+
+        if (!this.isEditing) {
+            return null;
+        }
 
         Button removeBtn = new Button("Remove");
 
@@ -175,8 +185,24 @@ public class ImageListController {
 
         this.imageFileList.addAll(this.filterValidImageFiles(files));
 
+        if (this.imageFileList.size() > maxImageFiles) {
+            this.imageFileList.subList(0, maxImageFiles).clear();
+        }
+
+        this.showImages();
+    }
+
+
+    @FXML
+    public void onEditImageListAction(Event event) {
+        this.isEditing = !this.isEditing;
         this.showImages();
 
+        if (this.isEditing) {
+            this.editButton.setText("Done");
+        } else {
+            this.editButton.setText("Edit");
+        }
     }
 
     private List<File> filterValidImageFiles(List<File> files) {
@@ -185,7 +211,6 @@ public class ImageListController {
 
             try {
                 String mimetype = Files.probeContentType(file.toPath());
-//mimetype should be something like "image/png"
 
                 if (mimetype != null && mimetype.split("/")[0].equals("image")) {
                     return true;
@@ -197,6 +222,12 @@ public class ImageListController {
 
         }).collect(Collectors.toList());
 
+    }
+
+    private void toggleEditButton() {
+        boolean isShow = this.imageFileList.size() > 0;
+        this.editButton.setVisible(isShow);
+        this.editButton.setManaged(isShow);
     }
 
 

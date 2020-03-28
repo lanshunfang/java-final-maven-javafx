@@ -45,8 +45,21 @@
 
         <Label styleClass="gap-margin" text=" "></Label>
 
-        <Button styleClass="padding-10"
-                onAction="#onPickImageAction" text="Pick image(s)"/>
+        <HBox styleClass="center-align">
+            <Button styleClass="padding-10"
+                    onAction="#onPickImageAction" text="Pick image(s)"/>
+            <Label styleClass="gap-margin" text=" "></Label>
+
+            <Button styleClass="padding-10"
+                    fx:id="editButton"
+                    onAction="#onEditImageListAction" text="Edit"/>
+        </HBox>
+
+
+        <Label styleClass="gap-margin" text=" "></Label>
+
+        <Label fx:id="maxImageLabel"></Label>
+
 
     </children>
 
