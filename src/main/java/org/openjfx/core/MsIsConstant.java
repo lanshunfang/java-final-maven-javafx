@@ -42,4 +42,22 @@ public class MsIsConstant {
         }
     }
 
+    public enum ImageConvertingFormatEnum {
+        Jpg("jpg"),
+        Png("png");
+
+        public final String value;
+
+        ImageConvertingFormatEnum(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return this.value;
+        }
+
+
+    }
+
 }

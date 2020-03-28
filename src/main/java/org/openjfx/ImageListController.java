@@ -1,21 +1,25 @@
 package org.openjfx;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javafx.animation.FadeTransition;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.util.Duration;
 import org.openjfx.core.*;
 import org.openjfx.core.MessageObject.*;
 import org.openjfx.core.MsIsConstant.*;
@@ -28,7 +32,23 @@ public class ImageListController {
     @FXML
     public Image imagePlaceholder;
     @FXML
+    public HBox defaultActionContainer;
+    @FXML
+    public HBox editItemContainer;
+    @FXML
     public Button editButton;
+    @FXML
+    public Button convertButton;
+
+    @FXML
+    public HBox convertingWrapper;
+    @FXML
+    public Button cancelConvertButton;
+    @FXML
+    public Button startConvertButton;
+
+    @FXML
+    public ComboBox convertFormatComboBox;
 
     private ArrayList<File> imageFileList = new ArrayList<>();
 
@@ -40,22 +60,25 @@ public class ImageListController {
     Label maxImageLabel;
 
     private boolean isEditing;
+    private boolean isConverting;
+    private boolean isConvertingInProgress;
 
     @FXML
     public void initialize() {
         this.setMaxImageFiles();
-        this.toggleEditButton();
+        this.toggleEditItemWrapper();
+        this.initConvertTools();
     }
 
     private void setMaxImageFiles() {
         this.maxImageLabel.setText("Maximum images: " + maxImageFiles);
     }
 
-    private void showImages() {
+    private void repaintImageList() {
 
         gridPane.getChildren().clear();
 
-        this.toggleEditButton();
+        this.toggleEditItemWrapper();
 
         if (imageFileList.size() == 0) {
             setDefaultImagePlaceholder();
@@ -140,7 +163,7 @@ public class ImageListController {
             removeBtn.setOnAction(deleteEvent -> {
                 imageFileList.remove(file);
                 setFileToView(null);
-                this.showImages();
+                this.repaintImageList();
             });
         }
 
@@ -150,6 +173,11 @@ public class ImageListController {
 
     private void navigateToDetailOnClick(ImageView imageView, File file) {
         imageView.addEventFilter(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+
+            if (this.isEditing || this.isConverting) {
+                return;
+            }
+
             setFileToView(file);
             Router.navigateToDetailView();
         });
@@ -189,20 +217,74 @@ public class ImageListController {
             this.imageFileList.subList(0, maxImageFiles).clear();
         }
 
-        this.showImages();
+        this.repaintImageList();
     }
 
 
     @FXML
     public void onEditImageListAction(Event event) {
         this.isEditing = !this.isEditing;
-        this.showImages();
 
         if (this.isEditing) {
-            this.editButton.setText("Done");
+            this.isConverting = false;
+        }
+
+        this.renderEditConvertState();
+
+    }
+
+    private void toggleEditState() {
+        this.repaintImageList();
+
+        if (this.isEditing) {
+            this.editButton.setText("Done Editing");
         } else {
             this.editButton.setText("Edit");
         }
+    }
+
+    @FXML
+    public void onConvertImageListAction(Event event) {
+        this.isConverting = !this.isConverting;
+
+        if (this.isConverting) {
+            this.isEditing = false;
+        }
+
+        this.renderEditConvertState();
+    }
+
+    @FXML
+    public void onCancelConvertImageListAction(Event event) {
+        this.isConverting = false;
+        this.isConvertingInProgress = false;
+        this.toggleStartConvertButtonState();
+        this.renderEditConvertState();
+    }
+    @FXML
+    public void onStartConvertImageListAction(Event event) {
+        this.isConvertingInProgress = true;
+
+        this.toggleStartConvertButtonState();
+
+    }
+
+    private void toggleStartConvertButtonState() {
+        this.startConvertButton.setText(this.isConvertingInProgress ? "Converting" : "Start Convert");
+        this.startConvertButton.setDisable(this.isConvertingInProgress);
+        this.convertFormatComboBox.setDisable(this.isConvertingInProgress);
+    }
+
+    private void renderEditConvertState() {
+        this.toggleEditState();
+        this.toggleConvertMode();
+    }
+
+    private void toggleConvertMode() {
+
+        this.toggleDefaultActionContainer();
+        this.toggleConvertWrapper();
+        this.toggleImageListOpacity();
     }
 
     private List<File> filterValidImageFiles(List<File> files) {
@@ -224,11 +306,42 @@ public class ImageListController {
 
     }
 
-    private void toggleEditButton() {
+    private void toggleEditItemWrapper() {
         boolean isShow = this.imageFileList.size() > 0;
-        this.editButton.setVisible(isShow);
-        this.editButton.setManaged(isShow);
+        this.editItemContainer.setVisible(isShow);
+        this.editItemContainer.setManaged(isShow);
     }
+
+    private void toggleDefaultActionContainer() {
+        this.defaultActionContainer.setVisible(!this.isConverting);
+        this.defaultActionContainer.setManaged(!this.isConverting);
+
+    }
+    private void toggleConvertWrapper() {
+        this.convertingWrapper.setVisible(this.isConverting);
+        this.convertingWrapper.setManaged(this.isConverting);
+
+    }
+
+    private void initConvertTools() {
+        this.convertFormatComboBox.getItems().clear();
+        this.convertFormatComboBox.getItems().addAll(
+                Arrays.asList(ImageConvertingFormatEnum.values())
+        );
+        this.convertFormatComboBox.getSelectionModel().selectFirst();
+
+        this.toggleConvertMode();
+        this.toggleImageListOpacity();
+    }
+
+    private void toggleImageListOpacity() {
+        double opacity = this.isConverting ? 0.5 : 1;
+        FadeTransition ft = new FadeTransition(Duration.millis(500), this.gridPane);
+        ft.setToValue(opacity);
+        ft.play();
+
+    }
+
 
 
 }

@@ -12,6 +12,7 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ComboBox?>
 <VBox styleClass="center-align" minHeight="300.0" minWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageListController">
     <children>
@@ -45,14 +46,54 @@
 
         <Label styleClass="gap-margin" text=" "></Label>
 
-        <HBox styleClass="center-align">
+        <HBox styleClass="center-align"
+
+              fx:id="defaultActionContainer">
             <Button styleClass="padding-10"
                     onAction="#onPickImageAction" text="Pick image(s)"/>
-            <Label styleClass="gap-margin" text=" "></Label>
+
+            <HBox
+                    fx:id="editItemContainer">
+                <Label
+                        styleClass="gap-margin" text=" "></Label>
+
+                <Button styleClass="padding-10"
+                        fx:id="editButton"
+                        onAction="#onEditImageListAction" text="Edit"/>
+
+                <Label
+                        styleClass="gap-margin" text=" "></Label>
+
+                <Button styleClass="padding-10"
+                        fx:id="convertButton"
+                        onAction="#onConvertImageListAction" text="Convert"/>
+
+            </HBox>
+
+        </HBox>
+
+        <HBox styleClass="center-align" fx:id="convertingWrapper">
+
+            <Label
+                    styleClass="gap-margin" text=" "></Label>
 
             <Button styleClass="padding-10"
-                    fx:id="editButton"
-                    onAction="#onEditImageListAction" text="Edit"/>
+                    fx:id="cancelConvertButton"
+                    onAction="#onCancelConvertImageListAction" text="Cancel Convert"/>
+            <Label
+                    styleClass="gap-margin" text=" "></Label>
+
+            <Button styleClass="padding-10"
+                    fx:id="startConvertButton"
+                    onAction="#onStartConvertImageListAction" text="Start Convert"/>
+
+            <Label
+                    styleClass="gap-margin" text=" "></Label>
+
+            <ComboBox
+                    styleClass="convert-format-combobox"
+                    fx:id="convertFormatComboBox">
+            </ComboBox>
         </HBox>
 
 
