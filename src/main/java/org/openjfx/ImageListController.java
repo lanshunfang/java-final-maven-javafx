@@ -5,20 +5,22 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javafx.animation.FadeTransition;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import org.openjfx.core.*;
 import org.openjfx.core.MessageObject.*;
@@ -27,7 +29,15 @@ import org.openjfx.core.MsIsConstant.*;
 public class ImageListController {
 
     @FXML
+    public BorderPane borderPaneContainer;
+    @FXML
     public GridPane gridPane;
+    @FXML
+    public TextFlow globalNotificationTextFlowAlert;
+    @FXML
+    public VBox centerWrapper;
+    @FXML
+    public TextFlow copyright;
 
     @FXML
     public Image imagePlaceholder;
@@ -48,7 +58,9 @@ public class ImageListController {
     public Button startConvertButton;
 
     @FXML
-    public ComboBox convertFormatComboBox;
+    public SplitMenuButton convertFormatSplitMenuButton;
+
+    public ProgressBar progressBar;
 
     private ArrayList<File> imageFileList = new ArrayList<>();
 
@@ -57,7 +69,7 @@ public class ImageListController {
     private Channel messaging = Messaging.getInstance();
 
     @FXML
-    Label maxImageLabel;
+    Button pickButton;
 
     private boolean isEditing;
     private boolean isConverting;
@@ -65,13 +77,17 @@ public class ImageListController {
 
     @FXML
     public void initialize() {
+        this.initLayout();
+        this.showWelcome();
         this.setMaxImageFiles();
         this.toggleEditItemWrapper();
         this.initConvertTools();
     }
 
     private void setMaxImageFiles() {
-        this.maxImageLabel.setText("Maximum images: " + maxImageFiles);
+        Tooltip tooltip = new Tooltip("Maximum images: " + maxImageFiles);
+        tooltip.getStyleClass().addAll("tooltip-info");
+        this.pickButton.setTooltip(tooltip);
     }
 
     private void repaintImageList() {
@@ -204,6 +220,7 @@ public class ImageListController {
 
     @FXML
     public void onPickImageAction(Event event) {
+        this.toggleNotification(false);
 
         List<File> files = App.openFileChooser();
 
@@ -261,6 +278,7 @@ public class ImageListController {
         this.toggleStartConvertButtonState();
         this.renderEditConvertState();
     }
+
     @FXML
     public void onStartConvertImageListAction(Event event) {
         this.isConvertingInProgress = true;
@@ -272,7 +290,17 @@ public class ImageListController {
     private void toggleStartConvertButtonState() {
         this.startConvertButton.setText(this.isConvertingInProgress ? "Converting" : "Start Convert");
         this.startConvertButton.setDisable(this.isConvertingInProgress);
-        this.convertFormatComboBox.setDisable(this.isConvertingInProgress);
+        this.convertFormatSplitMenuButton.setDisable(this.isConvertingInProgress);
+
+        if (this.isConvertingInProgress) {
+            this.progressBar = this.prepareProgressBar();
+        } else {
+            this.toggleNotification(false);
+        }
+    }
+
+    private void updateProgress() {
+
     }
 
     private void renderEditConvertState() {
@@ -311,12 +339,22 @@ public class ImageListController {
         this.editItemContainer.setVisible(isShow);
         this.editItemContainer.setManaged(isShow);
     }
+    private void initLayout() {
+        this.borderPaneContainer.prefHeight(500);
+        this.borderPaneContainer.prefWidth(500);
+        BorderPane.setAlignment(this.centerWrapper, Pos.CENTER);
+        BorderPane.setAlignment(this.copyright, Pos.CENTER);
+    }
+    private void showWelcome() {
+        this.notifyInfo("Pick an image(s) to start");
+    }
 
     private void toggleDefaultActionContainer() {
         this.defaultActionContainer.setVisible(!this.isConverting);
         this.defaultActionContainer.setManaged(!this.isConverting);
 
     }
+
     private void toggleConvertWrapper() {
         this.convertingWrapper.setVisible(this.isConverting);
         this.convertingWrapper.setManaged(this.isConverting);
@@ -324,14 +362,40 @@ public class ImageListController {
     }
 
     private void initConvertTools() {
-        this.convertFormatComboBox.getItems().clear();
-        this.convertFormatComboBox.getItems().addAll(
-                Arrays.asList(ImageConvertingFormatEnum.values())
+
+        List<MenuItem> menuItems = Stream.of(ImageConvertingFormatEnum.values()).map(
+                enumItem -> {
+                    MenuItem menuItem = new MenuItem(enumItem.toString());
+                    menuItem.setOnAction(
+                            e -> {
+                                this.convertFormatSplitMenuButton.setText(((MenuItem)e.getTarget()).getText());
+                            }
+                    );
+                    return menuItem;
+                }
+        ).collect(
+                Collectors.toList()
         );
-        this.convertFormatComboBox.getSelectionModel().selectFirst();
+
+        this.convertFormatSplitMenuButton.getItems().clear();
+        this.convertFormatSplitMenuButton.getItems().addAll(
+                menuItems
+        );
+//        this.convertFormatSplitMenuButton.setOnAction();
 
         this.toggleConvertMode();
         this.toggleImageListOpacity();
+    }
+
+    private ProgressBar prepareProgressBar() {
+        VBox vBox = new VBox();
+        ProgressBar progressBar = new ProgressBar(.1);
+        vBox.getChildren().addAll(
+                new Text("Converting"),
+                progressBar
+        );
+        this.notifyInfo(vBox);
+        return progressBar;
     }
 
     private void toggleImageListOpacity() {
@@ -340,6 +404,28 @@ public class ImageListController {
         ft.setToValue(opacity);
         ft.play();
 
+    }
+
+    private void notifyInfo(String message) {
+        Text alertMsg = new Text(message);
+        this.globalNotificationTextFlowAlert.getChildren().clear();
+        this.globalNotificationTextFlowAlert.getChildren().addAll(alertMsg);
+
+        this.toggleNotification(true);
+
+    }
+    private void notifyInfo(Node node) {
+
+        this.globalNotificationTextFlowAlert.getChildren().clear();
+        this.globalNotificationTextFlowAlert.getChildren().addAll(node);
+
+        this.toggleNotification(true);
+
+    }
+
+    private void toggleNotification(boolean isShow) {
+        this.globalNotificationTextFlowAlert.setVisible(isShow);
+        this.globalNotificationTextFlowAlert.setManaged(isShow);
     }
 
 

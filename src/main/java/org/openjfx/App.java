@@ -4,13 +4,14 @@ import java.awt.Desktop;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javafx.scene.layout.BorderPane;
+import org.kordamp.bootstrapfx.scene.layout.Panel;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,10 +44,22 @@ public class App extends Application {
         this.screenController = screenController;
 
         stage.setScene(scene);
+        scene.getStylesheets().add("org/kordamp/bootstrapfx/bootstrapfx.css");
+        stage.sizeToScene();
         stage.show();
         this.stage = stage;
 
     }
+
+//    private void initContainer() {
+//        Panel panel = new Panel("This is the title");
+//        panel.getStyleClass().add("panel-primary");                            //(2)
+//        BorderPane content = new BorderPane();
+//        content.setPadding(new Insets(20));
+//                 //(2)
+//        content.setCenter(button);
+//        panel.setBody(content);
+//    }
 
     public static void setRoot(ComponentEnum componentEnum) {
         try {

@@ -13,99 +13,150 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.ComboBox?>
-<VBox styleClass="center-align" minHeight="300.0" minWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageListController">
-    <children>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.text.Text?>
+<?import org.kordamp.bootstrapfx.scene.layout.Panel?>
+<?import javafx.scene.control.SplitMenuButton?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.control.Hyperlink?>
+<Panel
+        styleClass="panel-primary, center-align"
+        xmlns="http://javafx.com/javafx/11.0.1"
+        xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageListController">
 
-        <HBox styleClass="center-align">
-            <children>
-                <ScrollPane pannable="true">
+    <BorderPane
+            fx:id="borderPaneContainer"
+    >
+        <top>
 
-                    <GridPane fx:id="gridPane" styleClass="grid">
+            <VBox alignment="CENTER">
+                <Text text="Image Processor" styleClass="h2"/>
+                <Label
+                        styleClass="gap-margin" text=" "></Label>
+                <TextFlow
+                        textAlignment="CENTER"
+                        fx:id="globalNotificationTextFlowAlert"
+                        styleClass="alert, alert-info">
+                </TextFlow>
+                <Label
+                        styleClass="gap-margin" text=" "></Label>
+            </VBox>
+
+        </top>
+
+        <center>
+
+            <VBox
+                    fx:id="centerWrapper">
+                <children>
+
+                    <HBox alignment="CENTER">
                         <children>
-                            <ImageView fitHeight="100.0" fitWidth="100.0">
-                                <image>
-                                    <Image fx:id="imagePlaceholder" url="@../images/placeholder.png"/>
-                                </image>
-                            </ImageView>
+                            <ScrollPane pannable="true">
+
+                                <GridPane fx:id="gridPane" styleClass="grid">
+                                    <children>
+                                        <ImageView fitHeight="100.0" fitWidth="100.0">
+                                            <image>
+                                                <Image fx:id="imagePlaceholder" url="@../images/placeholder.png"/>
+                                            </image>
+                                        </ImageView>
+
+                                    </children>
+                                    <columnConstraints>
+                                        <ColumnConstraints/>
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints/>
+                                    </rowConstraints>
+
+
+                                </GridPane>
+                            </ScrollPane>
 
                         </children>
-                        <columnConstraints>
-                            <ColumnConstraints/>
-                        </columnConstraints>
-                        <rowConstraints>
-                            <RowConstraints/>
-                        </rowConstraints>
+                    </HBox>
+
+                    <Label text=" "></Label>
+
+                    <HBox
+                            alignment="CENTER"
+                            styleClass="center-align"
+
+                          fx:id="defaultActionContainer">
+                        <Button
+                                fx:id="pickButton"
+                                styleClass="btn, btn-default"
+                                onAction="#onPickImageAction" text="Pick image(s)"/>
+
+                        <HBox
+                                fx:id="editItemContainer">
+                            <Label
+                                    styleClass="gap-margin" text=" "></Label>
+
+                            <Button styleClass="btn, btn-default"
+                                    fx:id="editButton"
+                                    onAction="#onEditImageListAction" text="Edit"/>
+
+                            <Label
+                                    styleClass="gap-margin" text=" "></Label>
+
+                            <Button styleClass="btn, btn-primary"
+                                    fx:id="convertButton"
+                                    onAction="#onConvertImageListAction" text="Convert"/>
+
+                        </HBox>
+
+                    </HBox>
+
+                    <HBox alignment="CENTER" fx:id="convertingWrapper">
+
+                        <Label
+                                styleClass="gap-margin" text=" "></Label>
+
+                        <Button styleClass="btn, btn-default"
+                                fx:id="cancelConvertButton"
+                                onAction="#onCancelConvertImageListAction" text="Cancel Converting"/>
+                        <Label
+                                styleClass="gap-margin" text=" "></Label>
+
+                        <Button styleClass="btn, btn-primary"
+                                fx:id="startConvertButton"
+                                onAction="#onStartConvertImageListAction" text="Start Convert"/>
+
+                        <Label
+                                styleClass="gap-margin" text=" "></Label>
+
+                        <SplitMenuButton
+                                styleClass="split-menu-btn,split-menu-btn-primary"
+                                fx:id="convertFormatSplitMenuButton"
+                                text="Format"
+                        >
+                        </SplitMenuButton>
+                    </HBox>
 
 
-                    </GridPane>
-                </ScrollPane>
-
-            </children>
-        </HBox>
-
-        <Label styleClass="gap-margin" text=" "></Label>
-
-        <HBox styleClass="center-align"
-
-              fx:id="defaultActionContainer">
-            <Button styleClass="padding-10"
-                    onAction="#onPickImageAction" text="Pick image(s)"/>
-
-            <HBox
-                    fx:id="editItemContainer">
-                <Label
-                        styleClass="gap-margin" text=" "></Label>
-
-                <Button styleClass="padding-10"
-                        fx:id="editButton"
-                        onAction="#onEditImageListAction" text="Edit"/>
-
-                <Label
-                        styleClass="gap-margin" text=" "></Label>
-
-                <Button styleClass="padding-10"
-                        fx:id="convertButton"
-                        onAction="#onConvertImageListAction" text="Convert"/>
-
-            </HBox>
-
-        </HBox>
-
-        <HBox styleClass="center-align" fx:id="convertingWrapper">
-
-            <Label
-                    styleClass="gap-margin" text=" "></Label>
-
-            <Button styleClass="padding-10"
-                    fx:id="cancelConvertButton"
-                    onAction="#onCancelConvertImageListAction" text="Cancel Convert"/>
-            <Label
-                    styleClass="gap-margin" text=" "></Label>
-
-            <Button styleClass="padding-10"
-                    fx:id="startConvertButton"
-                    onAction="#onStartConvertImageListAction" text="Start Convert"/>
-
-            <Label
-                    styleClass="gap-margin" text=" "></Label>
-
-            <ComboBox
-                    styleClass="convert-format-combobox"
-                    fx:id="convertFormatComboBox">
-            </ComboBox>
-        </HBox>
+                    <Label styleClass="gap-margin" text=" "></Label>
 
 
-        <Label styleClass="gap-margin" text=" "></Label>
+                </children>
 
-        <Label fx:id="maxImageLabel"></Label>
+                <stylesheets>
+                    <URL value="@ImageList.css"/>
+                </stylesheets>
+            </VBox>
+        </center>
 
+        <bottom>
+            <TextFlow
+                    textAlignment="CENTER"
+                    fx:id="copyright">
+                <Text
+                        text="Author: Heyao Liu, Shunfang Lan"></Text>
+                <Hyperlink text="https://github.com/lanshunfang/java-final-maven-javafx"></Hyperlink>
+            </TextFlow>
+        </bottom>
 
-    </children>
+    </BorderPane>
 
-    <stylesheets>
-        <URL value="@../styles.css"/>
-        <URL value="@ImageList.css"/>
-    </stylesheets>
-</VBox>
+</Panel>

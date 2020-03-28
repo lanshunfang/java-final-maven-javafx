@@ -7,3 +7,9 @@
 .gap-margin {
     -fx-padding: 5px;
 }
+
+.hide {
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-opacity: 0;
+}
