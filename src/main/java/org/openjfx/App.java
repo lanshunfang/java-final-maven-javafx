@@ -37,8 +37,13 @@ public class App extends Application {
         this.stage = stage;
     }
 
-    static void setRoot(ComponentEnum componentEnum) throws IOException {
-        scene.setRoot(loadFXML(componentEnum));
+    public static void setRoot(ComponentEnum componentEnum) {
+        try {
+            scene.setRoot(loadFXML(componentEnum));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

@@ -13,6 +13,6 @@
 
     <stylesheets>
         <URL value="@../styles.css"/>
-        <URL value="@ImageList.css"/>
+        <URL value="@ImageDetail.css"/>
     </stylesheets>
 </VBox>

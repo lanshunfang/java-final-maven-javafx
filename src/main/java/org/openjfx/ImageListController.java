@@ -9,17 +9,21 @@ import java.util.stream.Collectors;
 
 import javafx.embed.swing.SwingFXUtils;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.image.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
+import org.openjfx.core.MessageObject.*;
+import org.openjfx.core.Messaging;
+import org.openjfx.core.Channel;
+import org.openjfx.core.MsIsConstant;
 import org.openjfx.core.MsIsConstant.*;
+import org.openjfx.core.Router;
 
 import javax.imageio.ImageIO;
 
@@ -40,6 +44,8 @@ public class ImageListController {
     }
 
     private ArrayList<File> imageFileList = new ArrayList<>();
+
+    private Channel messaging = Messaging.getInstance();
 
     public ImageListController() {
     }
@@ -115,11 +121,13 @@ public class ImageListController {
         {
             removeBtn.setOnAction(deleteEvent -> {
                 imageFileList.remove(file);
+                setFileToView(null);
                 this.showImages();
             });
         }
 
         return removeBtn;
+//        return null;
     }
 
     private ImageView getImageView(int columnIndex, int rowIndex, File file) {
@@ -146,7 +154,20 @@ public class ImageListController {
         );
 
         configImageView(imageView, imageHeight, imageWidth);
+        this.navigateToDetailOnClick(imageView, file);
+
         return imageView;
+    }
+
+    private void navigateToDetailOnClick(ImageView imageView, File file) {
+        imageView.addEventFilter(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+            setFileToView(file);
+            Router.navigateToDetailView();
+        });
+    }
+
+    private void setFileToView(File file) {
+        messaging.postMessage(SubjectEnum.ImageIdToShow, file);
     }
 
     private Image getDefaultImage() {
@@ -210,5 +231,6 @@ public class ImageListController {
         }).collect(Collectors.toList());
 
     }
+
 
 }
