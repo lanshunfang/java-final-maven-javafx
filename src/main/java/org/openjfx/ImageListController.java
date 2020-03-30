@@ -76,6 +76,8 @@ public class ImageListController {
     private boolean isConverting;
     private boolean isConvertingInProgress;
 
+    private String convertFormat;
+
     @FXML
     public void initialize() {
         this.initLayout();
@@ -328,13 +330,35 @@ public class ImageListController {
     public void onStartConvertImageListAction(Event event) {
         this.isConvertingInProgress = true;
 
+        this.startConvert();
+    }
+
+    private void startConvert() {
+        File outputDirectory = App.openDirectoryChooser();
+        if (outputDirectory == null) {
+            return;
+        }
+
+        this.toggleConvertingState();
+
+        ImageUtil.convertParallel(this.imageFileList, outputDirectory, this.getFormat());
+
+        this.finishConvert();
+    }
+
+    private void finishConvert() {
+        this.isConvertingInProgress = false;
         this.toggleConvertingState();
 
     }
 
+    private String getFormat() {
+        return this.convertFormat;
+    }
+
     private void toggleConvertingState() {
-        this.startConvertButton.setText(this.isConvertingInProgress ? "Converting" : "Start Convert");
-        this.startConvertButton.setDisable(this.isConvertingInProgress);
+        this.startConvertButton.setText(this.isConvertingInProgress ? "Converting" : "Pick download directory");
+        this.startConvertButton.setDisable(this.isConvertingInProgress || this.getFormat().equals("Select Format"));
         this.convertFormatSplitMenuButton.setDisable(this.isConvertingInProgress);
 
         if (this.isConvertingInProgress) {
@@ -384,8 +408,8 @@ public class ImageListController {
 
     private void toggleEditItemWrapper() {
         boolean isShow = this.imageFileList.size() > 0;
-        this.editItemContainer.setVisible(isShow);
-        this.editItemContainer.setManaged(isShow);
+        this.setNodeVisibility(this.editItemContainer, isShow);
+
     }
 
     private void initLayout() {
@@ -400,15 +424,12 @@ public class ImageListController {
     }
 
     private void toggleDefaultActionContainer() {
-        this.defaultActionContainer.setVisible(!this.isConverting);
-        this.defaultActionContainer.setManaged(!this.isConverting);
+        this.setNodeVisibility(this.defaultActionContainer, !this.isConverting);
 
     }
 
     private void toggleConvertWrapper() {
-        this.convertingWrapper.setVisible(this.isConverting);
-        this.convertingWrapper.setManaged(this.isConverting);
-
+        this.setNodeVisibility(this.convertingWrapper, this.isConverting);
     }
 
     private void initConvertTools() {
@@ -418,7 +439,9 @@ public class ImageListController {
                     MenuItem menuItem = new MenuItem(enumItem.toString());
                     menuItem.setOnAction(
                             e -> {
-                                this.convertFormatSplitMenuButton.setText(((MenuItem) e.getTarget()).getText());
+                                String format = ((MenuItem) e.getTarget()).getText();
+                                this.setConvertFormat(format);
+                                this.convertFormatSplitMenuButton.setText(format);
                             }
                     );
                     return menuItem;
@@ -435,6 +458,18 @@ public class ImageListController {
 
         this.toggleConvertMode();
         this.toggleImageListOpacity();
+
+        this.startConvertButton.setTooltip(
+                new Tooltip("Start to convert")
+        );
+
+        this.setNodeVisibility(this.startConvertButton, false);
+
+    }
+
+    private void setConvertFormat(String format) {
+        this.convertFormat = format;
+        this.setNodeVisibility(this.startConvertButton, true);
     }
 
     private ProgressBar prepareProgressBar() {
@@ -475,8 +510,12 @@ public class ImageListController {
     }
 
     private void toggleNotification(boolean isShow) {
-        this.globalNotificationTextFlowAlert.setVisible(isShow);
-        this.globalNotificationTextFlowAlert.setManaged(isShow);
+        this.setNodeVisibility(this.globalNotificationTextFlowAlert, isShow);
+    }
+
+    private void setNodeVisibility(Node node, boolean isShow) {
+        node.setVisible(isShow);
+        node.setManaged(isShow);
     }
 
 

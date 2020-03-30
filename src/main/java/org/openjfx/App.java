@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -87,6 +88,11 @@ public class App extends Application {
         configureFileChooser(fileChooser);
 
         return fileChooser.showOpenMultipleDialog(stage);
+
+    }
+    static File openDirectoryChooser() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        return directoryChooser.showDialog(stage);
 
     }
 

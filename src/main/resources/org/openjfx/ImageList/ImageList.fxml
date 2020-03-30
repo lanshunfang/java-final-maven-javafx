@@ -120,19 +120,19 @@
                         <Label
                                 styleClass="gap-margin" text=" "></Label>
 
-                        <Button styleClass="btn, btn-primary"
-                                fx:id="startConvertButton"
-                                onAction="#onStartConvertImageListAction" text="Start Convert"/>
-
-                        <Label
-                                styleClass="gap-margin" text=" "></Label>
 
                         <SplitMenuButton
                                 styleClass="split-menu-btn,split-menu-btn-primary"
                                 fx:id="convertFormatSplitMenuButton"
-                                text="Format"
+                                text="Select Format"
                         >
                         </SplitMenuButton>
+                        <Label
+                                styleClass="gap-margin" text=" "></Label>
+
+                        <Button styleClass="btn, btn-primary"
+                                fx:id="startConvertButton"
+                                onAction="#onStartConvertImageListAction" text="Pick download directory"/>
                     </HBox>
 
 

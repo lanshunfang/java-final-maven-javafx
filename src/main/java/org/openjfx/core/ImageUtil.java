@@ -7,7 +7,9 @@ import javafx.scene.image.WritableImage;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -19,10 +21,9 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import magick.*;
+//import magick.*;
 
 public class ImageUtil {
-
 
     public static ImageView getImageViewByImage(Image image, String cssClasses, int imageWidth, int imageHeight) {
         ImageView imageView = new ImageView();
@@ -230,25 +231,54 @@ public class ImageUtil {
 
     }
 
-    public static void convert(File inputFile, File outputDirectory, String format) {
+    public static void convertParallel(ArrayList<File> imageFileList, File outputDirectory, String format) {
+
+        imageFileList.stream().parallel().forEach(
+                file -> {
+                    convert(file, outputDirectory, format);
+                }
+        );
+
+    }
+
+    private static void convert(File inputFile, File outputDirectory, String format) {
+
+        String fileName = inputFile.getName().split("\\.")[0];
+        StringBuilder outputFileStreamBuilder = new StringBuilder(outputDirectory.getAbsolutePath());
+        outputFileStreamBuilder.append(File.separatorChar);
+        outputFileStreamBuilder.append(fileName);
+        outputFileStreamBuilder.append("-converted");
+        outputFileStreamBuilder.append(".");
+        outputFileStreamBuilder.append(format);
+
+        String outputFile = outputFileStreamBuilder.toString();
 
         try {
 
-            ImageInfo info = getImageInfo(inputFile);
+            boolean isWindows = System.getProperty("os.name")
+                    .toLowerCase().startsWith("windows");
+            ProcessBuilder processBuilder = new ProcessBuilder();
 
-            String fileName = inputFile.getName().split("\\.")[0];
-            StringBuilder outputFile = new StringBuilder(outputDirectory.getAbsolutePath());
-            outputFile.append(File.separatorChar);
-            outputFile.append(fileName);
-            outputFile.append(".");
-            outputFile.append(format);
+//            if (!isWindows) {
+//                processBuilder.command("magick", "convert", inputFile.getAbsolutePath(), outputFile);
+//            }
 
-            File file = new File(outputFile.toString());
-            info.setAdjoin(1);
+            processBuilder.command("magick", "convert", inputFile.getAbsolutePath(), outputFile);
 
-            MagickImage image = new MagickImage(info);
-            image.setFileName(file.getAbsolutePath());
-            image.writeImage(info);
+
+            Process process = processBuilder.start();
+
+            BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            int exitCode = process.waitFor();
+            System.out.println("\nExited with error code : " + exitCode);
+
 
 
         } catch (Exception e) {
@@ -260,15 +290,4 @@ public class ImageUtil {
 
     }
 
-    private static ImageInfo getImageInfo(File inputName) throws MagickException {
-
-        String density = "300";
-        ImageInfo info = new ImageInfo(inputName.getAbsolutePath());
-        info.setDensity(density);
-        info.setCompression(CompressionType.Group4Compression);
-        info.setColorspace(ColorspaceType.RGBColorspace);
-
-        return info;
-
-    }
 }

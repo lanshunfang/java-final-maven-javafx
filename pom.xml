@@ -40,11 +40,12 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/jmagick/jmagick -->
-        <dependency>
-            <groupId>jmagick</groupId>
-            <artifactId>jmagick</artifactId>
-            <version>6.6.9</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>jmagick</groupId>-->
+<!--            <artifactId>jmagick</artifactId>-->
+<!--            <version>6.6.9</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
     </dependencies>
     <repositories>
