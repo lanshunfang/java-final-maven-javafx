@@ -44,7 +44,6 @@
             <groupId>jmagick</groupId>
             <artifactId>jmagick</artifactId>
             <version>6.6.9</version>
-            <scope>provided</scope>
         </dependency>
 
     </dependencies>

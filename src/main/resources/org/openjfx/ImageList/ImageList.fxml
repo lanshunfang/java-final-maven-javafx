@@ -116,7 +116,7 @@
 
                         <Button styleClass="btn, btn-default"
                                 fx:id="cancelConvertButton"
-                                onAction="#onCancelConvertImageListAction" text="Cancel Converting"/>
+                                onAction="#onCancelConvertImageListAction" text="Back"/>
                         <Label
                                 styleClass="gap-margin" text=" "></Label>
 

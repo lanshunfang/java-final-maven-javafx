@@ -19,6 +19,8 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import magick.*;
+
 public class ImageUtil {
 
 
@@ -225,6 +227,48 @@ public class ImageUtil {
         public int getIndex() {
             return this.index;
         }
+
+    }
+
+    public static void convert(File inputFile, File outputDirectory, String format) {
+
+        try {
+
+            ImageInfo info = getImageInfo(inputFile);
+
+            String fileName = inputFile.getName().split("\\.")[0];
+            StringBuilder outputFile = new StringBuilder(outputDirectory.getAbsolutePath());
+            outputFile.append(File.separatorChar);
+            outputFile.append(fileName);
+            outputFile.append(".");
+            outputFile.append(format);
+
+            File file = new File(outputFile.toString());
+            info.setAdjoin(1);
+
+            MagickImage image = new MagickImage(info);
+            image.setFileName(file.getAbsolutePath());
+            image.writeImage(info);
+
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        }
+
+
+    }
+
+    private static ImageInfo getImageInfo(File inputName) throws MagickException {
+
+        String density = "300";
+        ImageInfo info = new ImageInfo(inputName.getAbsolutePath());
+        info.setDensity(density);
+        info.setCompression(CompressionType.Group4Compression);
+        info.setColorspace(ColorspaceType.RGBColorspace);
+
+        return info;
 
     }
 }
