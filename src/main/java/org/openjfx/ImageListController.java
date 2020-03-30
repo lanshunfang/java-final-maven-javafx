@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,7 +18,9 @@ import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import org.openjfx.core.*;
@@ -138,6 +141,14 @@ public class ImageListController {
                     );
                 }
 
+                Node formatLabel = this.getImageFormatTag(imageWrapper.file);
+                if (formatLabel != null) {
+                    stackPane.getChildren().add(
+                            formatLabel
+                    );
+                    StackPane.setAlignment(formatLabel, Pos.TOP_RIGHT);
+                }
+
                 gridPane.add(stackPane, columnIndex, rowIndex);
 
                 columnIndex++;
@@ -147,6 +158,43 @@ public class ImageListController {
             }
         }
 
+    }
+
+    private Node getImageFormatTag(File file) {
+        String fileName  = file.getName();
+        String ext = Optional.ofNullable(fileName)
+                .filter(f -> f.contains("."))
+                .map(f -> f.substring(f.lastIndexOf(".") + 1))
+                .get();
+
+        if (ext.isBlank()) {
+            return null;
+        }
+
+        if (this.isConvertingInProgress) {
+            ext += " -> " + this.convertFormatSplitMenuButton.getText();
+        }
+
+        Label label =  new Label(ext);
+        label.getStyleClass().addAll(
+                StyleClass.FontStyleEnum.FontItalic.toString(),
+                StyleClass.FontStyleEnum.FontSmall.toString(),
+                "bg-white-opacity-7",
+                StyleClass.PaddingEnum.Padding5.toString()
+
+                );
+
+        label.setTextAlignment(TextAlignment.RIGHT);
+        label.setTextFill(Color.web("#ffffff"));
+        label.setPrefHeight(10);
+
+        if (this.isConvertingInProgress) {
+            label.setPrefWidth(70);
+        } else {
+            label.setPrefWidth(23);
+        }
+
+        return label;
     }
 
     private Node getDeleteHandler(File file) {
@@ -274,7 +322,6 @@ public class ImageListController {
         this.isConverting = false;
         this.isConvertingInProgress = false;
         this.toggleConvertingState();
-        this.renderEditConvertState();
     }
 
     @FXML
@@ -295,6 +342,9 @@ public class ImageListController {
         } else {
             this.toggleNotification(false);
         }
+
+        this.renderEditConvertState();
+
     }
 
     private void updateProgress() {
