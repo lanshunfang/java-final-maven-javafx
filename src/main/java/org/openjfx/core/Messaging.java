@@ -13,8 +13,3 @@ public class Messaging {
         return channel;
     }
 }
-
-
-interface Unsub {
-    void unsub();
-}

@@ -65,3 +65,8 @@ interface IChannel {
     Unsub onMessage(MessageObject.SubjectEnum subjectEnum, LambdaInvoke callback, boolean isDiscardHistoryMessage);
 
 }
+
+
+interface Unsub {
+    void unsub();
+}

@@ -3,9 +3,7 @@ package org.openjfx;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -102,24 +100,21 @@ public class ImageListController {
         }
 
         int columnCount = 3;
-        int columnIndex = 0;
-        int rowIndex = 0;
 
-        for (int fileIndex = 0; fileIndex < imageFileList.size(); fileIndex++) {
+        List<ImageUtil.ImageWrapper> imageWrappers = ImageUtil.getImageList(imageFileList);
 
-            File file = imageFileList.get(fileIndex);
+        for (ImageUtil.ImageWrapper imageWrapper : imageWrappers) {
 
             try {
 
-                if (columnIndex >= columnCount) {
-                    rowIndex++;
-                }
-                columnIndex %= columnCount;
+                int columnIndex = imageWrapper.index % columnCount;
+
+                int rowIndex = imageWrapper.index / columnCount;
 
                 StackPane stackPane = new StackPane();
                 stackPane.getStyleClass().add("grid-cell");
 
-                Node deleteHandler = getDeleteHandler(file);
+                Node deleteHandler = getDeleteHandler(imageWrapper.file);
 
                 StringBuilder styleClasses = new StringBuilder();
                 if (columnIndex == 0) {
@@ -129,8 +124,9 @@ public class ImageListController {
                     styleClasses.append("first-row");
                 }
 
-                ImageView imageView = ImageUtil.getImageViewByFile(file, styleClasses.toString(), 100, 100);
-                this.navigateToDetailOnClick(imageView, file);
+                 ImageView imageView = ImageUtil.getImageViewByImage(imageWrapper.image, styleClasses.toString(), 100, 100);
+
+                this.navigateToDetailOnClick(imageView, imageWrapper.file);
 
                 stackPane.getChildren().add(
                         imageView
@@ -150,6 +146,7 @@ public class ImageListController {
                 err.printStackTrace();
             }
         }
+
     }
 
     private Node getDeleteHandler(File file) {
@@ -231,6 +228,7 @@ public class ImageListController {
         this.imageFileList.addAll(this.filterValidImageFiles(files));
 
         if (this.imageFileList.size() > maxImageFiles) {
+            this.notifyInfo("Only allow 50 images. Auto clear " + (this.imageFileList.size() - maxImageFiles) + " images");
             this.imageFileList.subList(0, maxImageFiles).clear();
         }
 
@@ -275,7 +273,7 @@ public class ImageListController {
     public void onCancelConvertImageListAction(Event event) {
         this.isConverting = false;
         this.isConvertingInProgress = false;
-        this.toggleStartConvertButtonState();
+        this.toggleConvertingState();
         this.renderEditConvertState();
     }
 
@@ -283,11 +281,11 @@ public class ImageListController {
     public void onStartConvertImageListAction(Event event) {
         this.isConvertingInProgress = true;
 
-        this.toggleStartConvertButtonState();
+        this.toggleConvertingState();
 
     }
 
-    private void toggleStartConvertButtonState() {
+    private void toggleConvertingState() {
         this.startConvertButton.setText(this.isConvertingInProgress ? "Converting" : "Start Convert");
         this.startConvertButton.setDisable(this.isConvertingInProgress);
         this.convertFormatSplitMenuButton.setDisable(this.isConvertingInProgress);
@@ -339,12 +337,14 @@ public class ImageListController {
         this.editItemContainer.setVisible(isShow);
         this.editItemContainer.setManaged(isShow);
     }
+
     private void initLayout() {
         this.borderPaneContainer.prefHeight(500);
         this.borderPaneContainer.prefWidth(500);
         BorderPane.setAlignment(this.centerWrapper, Pos.CENTER);
         BorderPane.setAlignment(this.copyright, Pos.CENTER);
     }
+
     private void showWelcome() {
         this.notifyInfo("Pick an image(s) to start");
     }
@@ -368,7 +368,7 @@ public class ImageListController {
                     MenuItem menuItem = new MenuItem(enumItem.toString());
                     menuItem.setOnAction(
                             e -> {
-                                this.convertFormatSplitMenuButton.setText(((MenuItem)e.getTarget()).getText());
+                                this.convertFormatSplitMenuButton.setText(((MenuItem) e.getTarget()).getText());
                             }
                     );
                     return menuItem;
@@ -414,6 +414,7 @@ public class ImageListController {
         this.toggleNotification(true);
 
     }
+
     private void notifyInfo(Node node) {
 
         this.globalNotificationTextFlowAlert.getChildren().clear();
@@ -427,7 +428,6 @@ public class ImageListController {
         this.globalNotificationTextFlowAlert.setVisible(isShow);
         this.globalNotificationTextFlowAlert.setManaged(isShow);
     }
-
 
 
 }
