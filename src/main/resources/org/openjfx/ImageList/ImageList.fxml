@@ -33,11 +33,31 @@
                 <Text text="Image Processor" styleClass="h2"/>
                 <Label
                         styleClass="gap-margin" text=" "></Label>
-                <TextFlow
-                        textAlignment="CENTER"
-                        fx:id="globalNotificationTextFlowAlert"
-                        styleClass="alert, alert-info">
-                </TextFlow>
+                <HBox
+
+                        fx:id="globalNotificationContainer">
+                    <TextFlow
+                            HBox.hgrow="ALWAYS"
+                            textAlignment="CENTER"
+                            fx:id="globalNotificationTextFlowAlert">
+                    </TextFlow>
+
+                    <Label
+                            HBox.hgrow="NEVER"
+                            styleClass="gap-margin" text=" "></Label>
+                    <ImageView
+                            HBox.hgrow="NEVER"
+                            fitHeight="20.0"
+                            fitWidth="20.0"
+
+                            onMouseClicked="#onCloseNotificationAction"
+                    >
+                        <image>
+                            <Image fx:id="closeImg" url="@../images/close.png"/>
+                        </image>
+                    </ImageView>
+                </HBox>
+
                 <Label
                         styleClass="gap-margin" text=" "></Label>
             </VBox>
@@ -83,7 +103,7 @@
                             alignment="CENTER"
                             styleClass="center-align"
 
-                          fx:id="defaultActionContainer">
+                            fx:id="defaultActionContainer">
                         <Button
                                 fx:id="pickButton"
                                 styleClass="btn, btn-default"
@@ -115,8 +135,8 @@
                                 styleClass="gap-margin" text=" "></Label>
 
                         <Button styleClass="btn, btn-default"
-                                fx:id="cancelConvertButton"
-                                onAction="#onCancelConvertImageListAction" text="Back"/>
+                                fx:id="goBackButton"
+                                onAction="#onGoBackImageListAction" text="Back"/>
                         <Label
                                 styleClass="gap-margin" text=" "></Label>
 

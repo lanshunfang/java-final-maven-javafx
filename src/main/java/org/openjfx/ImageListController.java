@@ -34,6 +34,8 @@ public class ImageListController {
     @FXML
     public GridPane gridPane;
     @FXML
+    public HBox globalNotificationContainer;
+    @FXML
     public TextFlow globalNotificationTextFlowAlert;
     @FXML
     public VBox centerWrapper;
@@ -54,7 +56,7 @@ public class ImageListController {
     @FXML
     public HBox convertingWrapper;
     @FXML
-    public Button cancelConvertButton;
+    public Button goBackButton;
     @FXML
     public Button startConvertButton;
 
@@ -129,7 +131,7 @@ public class ImageListController {
                     styleClasses.append("first-row");
                 }
 
-                 ImageView imageView = ImageUtil.getImageViewByImage(imageWrapper.image, styleClasses.toString(), 100, 100);
+                ImageView imageView = ImageUtil.getImageViewByImage(imageWrapper.image, styleClasses.toString(), 100, 100);
 
                 this.navigateToDetailOnClick(imageView, imageWrapper.file);
 
@@ -162,8 +164,13 @@ public class ImageListController {
 
     }
 
+    @FXML
+    public void onCloseNotificationAction() {
+        this.setNodeVisibility(this.globalNotificationContainer, false);
+    }
+
     private Node getImageFormatTag(File file) {
-        String fileName  = file.getName();
+        String fileName = file.getName();
         String ext = Optional.ofNullable(fileName)
                 .filter(f -> f.contains("."))
                 .map(f -> f.substring(f.lastIndexOf(".") + 1))
@@ -177,14 +184,14 @@ public class ImageListController {
             ext += " -> " + this.convertFormatSplitMenuButton.getText();
         }
 
-        Label label =  new Label(ext);
+        Label label = new Label(ext);
         label.getStyleClass().addAll(
                 StyleClass.FontStyleEnum.FontItalic.toString(),
                 StyleClass.FontStyleEnum.FontSmall.toString(),
                 "bg-white-opacity-7",
                 StyleClass.PaddingEnum.Padding5.toString()
 
-                );
+        );
 
         label.setTextAlignment(TextAlignment.RIGHT);
         label.setTextFill(Color.web("#ffffff"));
@@ -314,13 +321,19 @@ public class ImageListController {
 
         if (this.isConverting) {
             this.isEditing = false;
+            this.notifyInfo("Select the image format to convert to");
         }
 
         this.renderEditConvertState();
+
     }
 
     @FXML
-    public void onCancelConvertImageListAction(Event event) {
+    public void onGoBackImageListAction(Event event) {
+        this.goBackToList();
+    }
+
+    private void goBackToList() {
         this.isConverting = false;
         this.isConvertingInProgress = false;
         this.toggleConvertingState();
@@ -343,21 +356,33 @@ public class ImageListController {
 
         this.toggleConvertingState();
 
-        ImageUtil.convertParallel(this.imageFileList, outputDirectory, this.getFormat());
+        boolean isAllSuccess = ImageUtil.convertParallel(this.imageFileList, outputDirectory, this.getFormat());
 
-        this.finishConvert(outputDirectory);
+        this.finishConvert(outputDirectory, isAllSuccess);
     }
 
-    private void finishConvert(File outputDirectory ) {
+    private void finishConvert(File outputDirectory, boolean isAllSuccess) {
         this.isConvertingInProgress = false;
         this.toggleConvertingState();
 
         try {
             App.desktop.open(outputDirectory);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        if (isAllSuccess) {
+            this.notifyInfo("All done. " + (
+
+                    this.imageFileList.size() > 1
+                            ? this.imageFileList.size() + " images are"
+                            : this.imageFileList.size() + " image is"
+            ) + " saved in " + outputDirectory.getAbsolutePath());
+        } else {
+            this.notifyWarn("Some images could not be converted. Please check " + outputDirectory.getAbsolutePath());
+        }
+
+        this.goBackToList();
 
     }
 
@@ -372,8 +397,6 @@ public class ImageListController {
 
         if (this.isConvertingInProgress) {
             this.progressBar = this.prepareProgressBar();
-        } else {
-            this.toggleNotification(false);
         }
 
         this.renderEditConvertState();
@@ -451,6 +474,8 @@ public class ImageListController {
                                 String format = ((MenuItem) e.getTarget()).getText();
                                 this.setConvertFormat(format);
                                 this.convertFormatSplitMenuButton.setText(format);
+                                this.repaintImageList();
+                                this.notifyInfo("Pick a download directory");
                             }
                     );
                     return menuItem;
@@ -501,15 +526,35 @@ public class ImageListController {
     }
 
     private void notifyInfo(String message) {
+
+        this.notify(message, "alert", "alert-info");
+
+    }
+
+    private void notify(String message, String... styleClasses) {
         Text alertMsg = new Text(message);
-        this.globalNotificationTextFlowAlert.getChildren().clear();
-        this.globalNotificationTextFlowAlert.getChildren().addAll(alertMsg);
+        this.notify(alertMsg, styleClasses);
+        this.globalNotificationContainer.getStyleClass().addAll(
+                styleClasses
+        );
 
         this.toggleNotification(true);
 
     }
 
-    private void notifyInfo(Node node) {
+    private void notify(Node node, String... styleClasses) {
+
+        this.globalNotificationContainer.getStyleClass().addAll(
+                styleClasses
+        );
+
+        this.notify(node);
+
+        this.toggleNotification(true);
+
+    }
+
+    private void notify(Node node) {
 
         this.globalNotificationTextFlowAlert.getChildren().clear();
         this.globalNotificationTextFlowAlert.getChildren().addAll(node);
@@ -518,8 +563,20 @@ public class ImageListController {
 
     }
 
+    private void notifyInfo(Node node) {
+
+        this.notify(node, "alert", "alert-info");
+
+    }
+
+
+    private void notifyWarn(String message) {
+        this.notify(message, "alert", "alert-warn");
+
+    }
+
     private void toggleNotification(boolean isShow) {
-        this.setNodeVisibility(this.globalNotificationTextFlowAlert, isShow);
+        this.setNodeVisibility(this.globalNotificationContainer, isShow);
     }
 
     private void setNodeVisibility(Node node, boolean isShow) {

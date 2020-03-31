@@ -230,13 +230,23 @@ public class ImageUtil {
 
     }
 
-    public static void convertParallel(ArrayList<File> imageFileList, File outputDirectory, String format) {
+    public static boolean convertParallel(ArrayList<File> imageFileList, File outputDirectory, String format) {
 
-        imageFileList.stream().parallel().forEach(
+        return imageFileList.stream().parallel().map(
                 file -> {
-                    convert(file, outputDirectory, format);
+                    try {
+
+                        convert(file, outputDirectory, format);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+
+                    return true;
                 }
-        );
+        ).allMatch(isSuccess -> isSuccess);
+
 
     }
 
@@ -253,7 +263,7 @@ public class ImageUtil {
 
     public static File initOutputFolderWithTimestamp(File selectedOutputDirectory, String prefix) {
 
-        String outputFolderPath = selectedOutputDirectory.getAbsolutePath() + File.pathSeparator + prefix + getTimeStamp();
+        String outputFolderPath = selectedOutputDirectory.getAbsolutePath() + File.separatorChar + prefix + getTimeStamp();
 
         File directory = new File(outputFolderPath);
 
@@ -265,7 +275,7 @@ public class ImageUtil {
         return directory;
     }
 
-    private static void convert(File inputFile, File outputDirectory, String format) {
+    private static void convert(File inputFile, File outputDirectory, String format) throws Exception {
 
         String fileName = inputFile.getName().split("\\.")[0];
 
@@ -278,38 +288,36 @@ public class ImageUtil {
 
         String outputFile = outputFileStreamBuilder.toString();
 
-        try {
+//        try {
 
-            boolean isWindows = System.getProperty("os.name")
-                    .toLowerCase().startsWith("windows");
-            ProcessBuilder processBuilder = new ProcessBuilder();
+        boolean isWindows = System.getProperty("os.name")
+                .toLowerCase().startsWith("windows");
+        ProcessBuilder processBuilder = new ProcessBuilder();
 
-//            if (!isWindows) {
-//                processBuilder.command("magick", "convert", inputFile.getAbsolutePath(), outputFile);
-//            }
+        String binName = isWindows ? "magick.exe" : "magick";
 
-            processBuilder.command("magick", "convert", inputFile.getAbsolutePath(), outputFile);
+        processBuilder.command(binName, "convert", inputFile.getAbsolutePath(), outputFile);
 
 
-            Process process = processBuilder.start();
+        Process process = processBuilder.start();
 
-            BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-
-            int exitCode = process.waitFor();
-            System.out.println("\nExited with error code : " + exitCode);
-
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
+        String line;
+        while ((line = reader.readLine()) != null) {
+            System.out.println(line);
         }
+
+        int exitCode = process.waitFor();
+        System.out.println("\nExited with error code : " + exitCode);
+
+
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//
+//        }
 
 
     }
