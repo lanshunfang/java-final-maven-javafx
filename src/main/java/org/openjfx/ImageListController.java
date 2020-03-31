@@ -12,6 +12,7 @@ import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -41,6 +42,8 @@ public class ImageListController {
     public VBox centerWrapper;
     @FXML
     public TextFlow copyright;
+    @FXML
+    public Hyperlink projectUrl;
 
     @FXML
     public Image imagePlaceholder;
@@ -87,6 +90,11 @@ public class ImageListController {
         this.setMaxImageFiles();
         this.toggleEditItemWrapper();
         this.initConvertTools();
+    }
+
+    @FXML
+    public void openProjectUrl() {
+        App.openUrl(this.projectUrl.getText());
     }
 
     private void setMaxImageFiles() {
@@ -365,24 +373,54 @@ public class ImageListController {
         this.isConvertingInProgress = false;
         this.toggleConvertingState();
 
-        try {
-            App.desktop.open(outputDirectory);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        App.openFile(outputDirectory);
 
-        if (isAllSuccess) {
-            this.notifyInfo("All done. " + (
-
-                    this.imageFileList.size() > 1
-                            ? this.imageFileList.size() + " images are"
-                            : this.imageFileList.size() + " image is"
-            ) + " saved in " + outputDirectory.getAbsolutePath());
-        } else {
-            this.notifyWarn("Some images could not be converted. Please check " + outputDirectory.getAbsolutePath());
-        }
+        this.informResult(isAllSuccess, outputDirectory);
 
         this.goBackToList();
+
+    }
+
+    private void informResult(boolean isAllSuccess, File outputDirectory) {
+
+        HBox msgContainerHBox = new HBox();
+
+        msgContainerHBox.setAlignment(Pos.CENTER);
+
+        String savedFolder = outputDirectory.getAbsolutePath();
+
+        Text msgText = new Text(
+                isAllSuccess ?    "All done. " + (
+
+                        this.imageFileList.size() > 1
+                                ? this.imageFileList.size() + " images are"
+                                : this.imageFileList.size() + " image is"
+                ) + " saved in "
+                        :  "Some images could not be converted. Please check "
+        );
+
+        Text folderPathText = new Text(savedFolder);
+
+        folderPathText.setUnderline(true);
+
+        Button openDirectoryNode = new Button("Open");
+        openDirectoryNode.getStyleClass().addAll("btn", "btn-default");
+        openDirectoryNode.setOnAction(event -> {
+            App.openFile(outputDirectory);
+        });
+
+        msgContainerHBox.getChildren().addAll(
+                msgText,
+                folderPathText,
+                NodeUtil.getPaddingNode(),
+                openDirectoryNode
+        );
+
+        if (isAllSuccess) {
+            this.notifyInfo(msgContainerHBox);
+        } else {
+            this.notifyWarn(msgContainerHBox);
+        }
 
     }
 
@@ -449,6 +487,8 @@ public class ImageListController {
         this.borderPaneContainer.prefWidth(500);
         BorderPane.setAlignment(this.centerWrapper, Pos.CENTER);
         BorderPane.setAlignment(this.copyright, Pos.CENTER);
+
+
     }
 
     private void showWelcome() {
@@ -572,6 +612,10 @@ public class ImageListController {
 
     private void notifyWarn(String message) {
         this.notify(message, "alert", "alert-warn");
+
+    }
+    private void notifyWarn(Node node) {
+        this.notify(node, "alert", "alert-warn");
 
     }
 

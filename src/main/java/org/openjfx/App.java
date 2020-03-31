@@ -16,6 +16,7 @@ import org.kordamp.bootstrapfx.scene.layout.Panel;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 import org.openjfx.core.MsIsConstant.*;
@@ -96,6 +97,22 @@ public class App extends Application {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         return directoryChooser.showDialog(stage);
 
+    }
+
+    static void openFile(File file) {
+        try {
+            desktop.open(file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    static void openUrl(String url) {
+        try {
+            desktop.browse(new URL(url).toURI());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static Parent loadFXML(ComponentEnum componentEnum) throws IOException {

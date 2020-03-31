@@ -173,7 +173,11 @@
                     fx:id="copyright">
                 <Text
                         text="Author: Heyao Liu, Shunfang Lan"></Text>
-                <Hyperlink text="https://github.com/lanshunfang/java-final-maven-javafx"></Hyperlink>
+                <Hyperlink
+                        fx:id="projectUrl"
+                        text="https://github.com/lanshunfang/java-final-maven-javafx"
+                           onMouseClicked="#openProjectUrl"
+                ></Hyperlink>
             </TextFlow>
         </bottom>
 
