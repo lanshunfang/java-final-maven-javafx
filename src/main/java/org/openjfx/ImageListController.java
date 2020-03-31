@@ -339,16 +339,25 @@ public class ImageListController {
             return;
         }
 
+        outputDirectory = ImageUtil.initOutputFolderWithTimestamp(outputDirectory, "converted-");
+
         this.toggleConvertingState();
 
         ImageUtil.convertParallel(this.imageFileList, outputDirectory, this.getFormat());
 
-        this.finishConvert();
+        this.finishConvert(outputDirectory);
     }
 
-    private void finishConvert() {
+    private void finishConvert(File outputDirectory ) {
         this.isConvertingInProgress = false;
         this.toggleConvertingState();
+
+        try {
+            App.desktop.open(outputDirectory);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

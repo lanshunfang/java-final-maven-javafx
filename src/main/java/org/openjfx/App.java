@@ -32,6 +32,8 @@ public class App extends Application {
 
     private static ScreenController screenController;
 
+    public static Desktop desktop = Desktop.getDesktop();
+
     @Override
     public void start(Stage stage) throws IOException {
         scene = new Scene(loadFXML(ComponentEnum.ImageList), 800, 600);

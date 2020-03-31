@@ -10,10 +10,9 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.security.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -241,9 +240,35 @@ public class ImageUtil {
 
     }
 
+    private static String getTimeStamp() {
+
+        Date now = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
+        String time = dateFormat.format(now);
+//        File dir = new File(time);
+
+        return time;
+
+    }
+
+    public static File initOutputFolderWithTimestamp(File selectedOutputDirectory, String prefix) {
+
+        String outputFolderPath = selectedOutputDirectory.getAbsolutePath() + File.pathSeparator + prefix + getTimeStamp();
+
+        File directory = new File(outputFolderPath);
+
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
+
+        return directory;
+    }
+
     private static void convert(File inputFile, File outputDirectory, String format) {
 
         String fileName = inputFile.getName().split("\\.")[0];
+
         StringBuilder outputFileStreamBuilder = new StringBuilder(outputDirectory.getAbsolutePath());
         outputFileStreamBuilder.append(File.separatorChar);
         outputFileStreamBuilder.append(fileName);
@@ -278,7 +303,6 @@ public class ImageUtil {
 
             int exitCode = process.waitFor();
             System.out.println("\nExited with error code : " + exitCode);
-
 
 
         } catch (Exception e) {
