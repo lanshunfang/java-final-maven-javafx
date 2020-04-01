@@ -44,7 +44,8 @@ public class MsIsConstant {
 
     public enum ImageConvertingFormatEnum {
         Jpg("JPG", "jpg"),
-        Png("PNG", "png");
+        Png("PNG", "png"),
+        Gif("GIF", "gif");
 
         public final String displayValue;
         public final String formatValue;

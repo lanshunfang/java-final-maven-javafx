@@ -80,7 +80,13 @@ public class App extends Application {
     ) {
         fileChooser.setTitle("Choose Pictures");
 
-        FileChooser.ExtensionFilter fileExtensions =new FileChooser.ExtensionFilter("Images","*.jpg", "*.png");
+//        FileChooser.ExtensionFilter fileExtensions = new FileChooser.ExtensionFilter("Images","*.jpg", "*.png");
+        FileChooser.ExtensionFilter fileExtensions = new FileChooser.ExtensionFilter(
+                "Images",
+                "*.jpg",
+                "*.png",
+                "*.gif"
+        );
         fileChooser.getExtensionFilters().add(fileExtensions);
 
     }

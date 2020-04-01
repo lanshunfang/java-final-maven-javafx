@@ -364,6 +364,8 @@ public class ImageListController {
 
         this.toggleConvertingState();
 
+        this.notifyInfo("Converting..");
+
         boolean isAllSuccess = ImageUtil.convertParallel(this.imageFileList, outputDirectory, this.getFormat());
 
         this.finishConvert(outputDirectory, isAllSuccess);
@@ -393,13 +395,17 @@ public class ImageListController {
                 isAllSuccess ?    "All done. " + (
 
                         this.imageFileList.size() > 1
-                                ? this.imageFileList.size() + " images are"
-                                : this.imageFileList.size() + " image is"
+                                ? this.imageFileList.size() + " images(" + this.convertFormat + ") are"
+                                : this.imageFileList.size() + " image(" + this.convertFormat + ")  is"
                 ) + " saved in "
                         :  "Some images could not be converted. Please check "
         );
 
-        Text folderPathText = new Text(savedFolder);
+        Hyperlink folderPathText = new Hyperlink(savedFolder);
+
+        folderPathText.setOnMouseClicked(mouseEvent -> {
+            App.openFile(outputDirectory);
+        });
 
         folderPathText.setUnderline(true);
 
