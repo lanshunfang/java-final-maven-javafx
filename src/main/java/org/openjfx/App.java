@@ -121,6 +121,14 @@ public class App extends Application {
         }
     }
 
+    static void sleep(int milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private static Parent loadFXML(ComponentEnum componentEnum) throws IOException {
         String componentName = componentEnum.toString();
         return FXMLLoader.load(App.class.getResource(componentName + "/" + componentName + ".fxml"));

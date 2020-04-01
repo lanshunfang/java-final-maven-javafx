@@ -3,6 +3,7 @@ package org.openjfx;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,6 +67,8 @@ public class ImageListController {
     @FXML
     public SplitMenuButton convertFormatSplitMenuButton;
 
+    public HashMap<File, Node> fileNodeHashMap = new HashMap<>();
+
     public ProgressBar progressBar;
 
     private ArrayList<File> imageFileList = new ArrayList<>();
@@ -105,6 +108,8 @@ public class ImageListController {
 
     private void repaintImageList() {
 
+        this.notifyInfo("Loading images");
+
         gridPane.getChildren().clear();
 
         this.toggleEditItemWrapper();
@@ -121,6 +126,10 @@ public class ImageListController {
         for (ImageUtil.ImageWrapper imageWrapper : imageWrappers) {
 
             try {
+                
+                if (imageWrapper.isMarkedToDelete) {
+                    continue;
+                }
 
                 int columnIndex = imageWrapper.index % columnCount;
 
@@ -129,7 +138,7 @@ public class ImageListController {
                 StackPane stackPane = new StackPane();
                 stackPane.getStyleClass().add("grid-cell");
 
-                Node deleteHandler = getDeleteHandler(imageWrapper.file);
+                Node deleteHandler = getDeleteHandler(imageWrapper);
 
                 StringBuilder styleClasses = new StringBuilder();
                 if (columnIndex == 0) {
@@ -161,6 +170,7 @@ public class ImageListController {
                     StackPane.setAlignment(formatLabel, Pos.TOP_RIGHT);
                 }
 
+                fileNodeHashMap.put(imageWrapper.file, stackPane);
                 gridPane.add(stackPane, columnIndex, rowIndex);
 
                 columnIndex++;
@@ -169,6 +179,8 @@ public class ImageListController {
                 err.printStackTrace();
             }
         }
+
+        this.notifyInfo( this.imageFileList.size() > 0 ? "Images loaded" : "");
 
     }
 
@@ -214,7 +226,7 @@ public class ImageListController {
         return label;
     }
 
-    private Node getDeleteHandler(File file) {
+    private Node getDeleteHandler(ImageUtil.ImageWrapper imageWrapper) {
 
         if (!this.isEditing) {
             return null;
@@ -239,14 +251,27 @@ public class ImageListController {
 
         {
             removeBtn.setOnAction(deleteEvent -> {
-                imageFileList.remove(file);
+                imageFileList.remove(imageWrapper.file);
                 setFileToView(null);
-                this.repaintImageList();
+
+                this.deletePhotoNode(imageWrapper.file);
+                imageWrapper.isMarkedToDelete = true;
+//                this.repaintImageList();
             });
         }
 
         return removeBtn;
 //        return null;
+    }
+
+    private void deletePhotoNode(File file) {
+        if (!this.fileNodeHashMap.containsKey(file)) {
+            System.out.println("[WARN] Photo is not found in hashmap");
+        }
+        Node photoNode = this.fileNodeHashMap.get(file);
+
+        photoNode.setOpacity(0.2);
+
     }
 
     private void navigateToDetailOnClick(ImageView imageView, File file) {
@@ -314,7 +339,7 @@ public class ImageListController {
     }
 
     private void toggleEditState() {
-        this.repaintImageList();
+//        this.repaintImageList();
 
         if (this.isEditing) {
             this.editButton.setText("Done Editing");
@@ -520,7 +545,7 @@ public class ImageListController {
                                 String format = ((MenuItem) e.getTarget()).getText();
                                 this.setConvertFormat(format);
                                 this.convertFormatSplitMenuButton.setText(format);
-                                this.repaintImageList();
+//                                this.repaintImageList();
                                 this.notifyInfo("Pick a download directory");
                             }
                     );
@@ -578,6 +603,11 @@ public class ImageListController {
     }
 
     private void notify(String message, String... styleClasses) {
+
+        if (message.equals("")) {
+            this.toggleNotification(false);
+            return;
+        }
         Text alertMsg = new Text(message);
         this.notify(alertMsg, styleClasses);
         this.globalNotificationContainer.getStyleClass().addAll(

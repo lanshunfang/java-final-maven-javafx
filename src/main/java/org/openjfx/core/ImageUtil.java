@@ -217,6 +217,8 @@ public class ImageUtil {
         public BufferedImage bufferedImage;
         public Image image;
 
+        public boolean isMarkedToDelete = false;
+
         public ImageWrapper(int index, File file, BufferedImage bufferedImage, Image image) {
             this.index = index;
             this.bufferedImage = bufferedImage;
