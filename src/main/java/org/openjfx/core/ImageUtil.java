@@ -1,5 +1,6 @@
 package org.openjfx.core;
 
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
@@ -10,19 +11,30 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.security.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-//import magick.*;
+import javafx.concurrent.*;
 
 public class ImageUtil {
+
+    public static class ConvertResult {
+        public ImageWrapper imageWrapper;
+        public boolean isDone;
+
+        public double progress = 0;
+
+        public ConvertResult(ImageWrapper imageWrapper, boolean isDone) {
+            this.imageWrapper = imageWrapper;
+            this.isDone = isDone;
+        }
+    }
 
     public static ImageView getImageViewByImage(Image image, String cssClasses, int imageWidth, int imageHeight) {
         ImageView imageView = new ImageView();
@@ -232,24 +244,94 @@ public class ImageUtil {
 
     }
 
-    public static boolean convertParallel(ArrayList<File> imageFileList, File outputDirectory, String format) {
+    public static void safeJavaFxExecute(Consumer<Boolean> consumer) {
+        Platform.runLater(() -> {
+            consumer.accept(true);
+        });
+    }
 
-        return imageFileList.stream().parallel().map(
-                file -> {
-                    try {
+    private static ForkJoinPool getForkJoinPool() {
+        int cores = Runtime.getRuntime().availableProcessors();
+        return new ForkJoinPool(cores > 1 ? cores : 2);
+    }
 
-                        convert(file, outputDirectory, format);
+    public static Task convertParallel(
+            ArrayList<ImageWrapper> imageWrapperList,
+            File outputDirectory,
+            String imageConvertFormat,
+            Predicate<ImageWrapper> fileSelector,
+            Consumer<ConvertResult> consumerInProgress,
+            Consumer<Boolean> consumerDone
+    ) {
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return false;
-                    }
+        Task javafxTask = new Task<Void>() {
+            @Override
+            public Void call() {
 
-                    return true;
+                boolean isAllDone = false;
+
+                try {
+
+
+                    ArrayList<ImageUtil.ConvertResult> counter = new ArrayList<>();
+
+                    double imageLength = imageWrapperList.size();
+
+                    isAllDone = getForkJoinPool().submit(
+                            () -> imageWrapperList
+                                    .stream()
+                                    .parallel()
+                                    .filter((imageWrapper) -> fileSelector.test(imageWrapper))
+
+                                    .map(
+                                            imageWrapper -> {
+                                                ConvertResult result = new ConvertResult(imageWrapper, false);
+
+
+                                                try {
+
+                                                    convert(imageWrapper.file, outputDirectory, imageConvertFormat);
+
+                                                    result.isDone = true;
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                return result;
+                                            }
+                                    )
+
+                                    .peek(result -> {
+
+                                        counter.add(result);
+                                        result.progress = (double) counter.size() / imageLength;
+
+                                        consumerInProgress.accept(result);
+
+                                    })
+
+                                    .allMatch(convertResult -> convertResult.isDone)
+                    ).get();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-        ).allMatch(isSuccess -> isSuccess);
+
+                Stream.of(isAllDone).forEach(consumerDone);
+
+                return null;
+
+            }
+        };
 
 
+        Thread convertingThread = new Thread(javafxTask);
+
+        convertingThread.setDaemon(true);
+        convertingThread.start();
+
+        return javafxTask;
     }
 
     private static String getTimeStamp() {

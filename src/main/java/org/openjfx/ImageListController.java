@@ -10,10 +10,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javafx.animation.FadeTransition;
-import javafx.event.ActionEvent;
+import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -26,6 +25,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import org.openjfx.core.*;
+import org.openjfx.core.ImageUtil.ImageWrapper;
 import org.openjfx.core.MessageObject.*;
 import org.openjfx.core.MsIsConstant.*;
 
@@ -70,8 +70,10 @@ public class ImageListController {
     public HashMap<File, Node> fileNodeHashMap = new HashMap<>();
 
     public ProgressBar progressBar;
+    public Text progressText;
 
     private ArrayList<File> imageFileList = new ArrayList<>();
+    private ArrayList<ImageWrapper> imageWrapperList = new ArrayList<>();
 
     private int maxImageFiles = 50;
 
@@ -84,7 +86,7 @@ public class ImageListController {
     private boolean isConverting;
     private boolean isConvertingInProgress;
 
-    private String convertFormat;
+    private String convertFormat = "";
 
     @FXML
     public void initialize() {
@@ -106,6 +108,14 @@ public class ImageListController {
         this.pickButton.setTooltip(tooltip);
     }
 
+    private void updateImageModel() {
+        List<ImageWrapper> imageWrapperList = ImageUtil.getImageList(imageFileList);
+
+        this.imageWrapperList.clear();
+        ;
+        this.imageWrapperList.addAll(imageWrapperList);
+    }
+
     private void repaintImageList() {
 
         this.notifyInfo("Loading images");
@@ -121,12 +131,10 @@ public class ImageListController {
 
         int columnCount = 3;
 
-        List<ImageUtil.ImageWrapper> imageWrappers = ImageUtil.getImageList(imageFileList);
-
-        for (ImageUtil.ImageWrapper imageWrapper : imageWrappers) {
+        for (ImageWrapper imageWrapper : imageWrapperList) {
 
             try {
-                
+
                 if (imageWrapper.isMarkedToDelete) {
                     continue;
                 }
@@ -180,7 +188,7 @@ public class ImageListController {
             }
         }
 
-        this.notifyInfo( this.imageFileList.size() > 0 ? "Images loaded" : "");
+        this.notifyInfo(this.imageFileList.size() > 0 ? "Images loaded" : "");
 
     }
 
@@ -226,7 +234,7 @@ public class ImageListController {
         return label;
     }
 
-    private Node getDeleteHandler(ImageUtil.ImageWrapper imageWrapper) {
+    private Node getDeleteHandler(ImageWrapper imageWrapper) {
 
         if (!this.isEditing) {
             return null;
@@ -322,6 +330,8 @@ public class ImageListController {
             this.imageFileList.subList(0, maxImageFiles).clear();
         }
 
+        this.updateImageModel();
+
         this.repaintImageList();
     }
 
@@ -379,32 +389,82 @@ public class ImageListController {
         this.startConvert();
     }
 
+    private void listenImageConvertingMessage() {
+
+        this.messaging.onMessage(SubjectEnum.ImageConvertingInProgress, (inProgressData) -> {
+            ImageUtil.ConvertResult convertResult = (ImageUtil.ConvertResult) inProgressData;
+            safeUpdateProgress(convertResult.progress);
+
+        });
+    }
+
+    private void safeUpdateProgress(double progress) {
+        Platform.runLater(() -> {
+            double displayProgress = progress < 0.03 ? 0.03 : progress;
+            this.setProgress(displayProgress < 0.95 ? displayProgress : 0.95);
+        });
+    }
+
+    private void setProgress(double percentage) {
+        if (percentage >= 1) {
+            this.progressBar = null;
+            this.progressText = null;
+            this.notifyInfo("Done");
+            return;
+        }
+
+        if (this.progressBar == null) {
+            this.prepareProgressBar();
+        }
+
+        this.progressText.setText(
+                String.format("Converting: %3.2f%%", percentage * 100)
+        );
+
+        this.progressBar.setProgress(percentage);
+    }
+
     private void startConvert() {
         File outputDirectory = App.openDirectoryChooser();
         if (outputDirectory == null) {
             return;
         }
 
-        outputDirectory = ImageUtil.initOutputFolderWithTimestamp(outputDirectory, "converted-");
+        final File outputDirectoryUniq = ImageUtil.initOutputFolderWithTimestamp(outputDirectory, "converted-");
 
         this.toggleConvertingState();
 
-        this.notifyInfo("Converting..");
+        safeUpdateProgress(0.05);
 
-        boolean isAllSuccess = ImageUtil.convertParallel(this.imageFileList, outputDirectory, this.getFormat());
+        ImageUtil.convertParallel(
+//                this.imageFileList,
+                this.imageWrapperList,
+                outputDirectoryUniq,
+                this.getFormat(),
+                (imageWrapper) -> this.isConvertingInProgress && !imageWrapper.isMarkedToDelete,
+                (inProgressData) -> {
+                    this.messaging.postMessage(SubjectEnum.ImageConvertingInProgress, inProgressData);
+                },
+                (isAllSuccess) -> {
+                    this.finishConvert(outputDirectoryUniq, isAllSuccess);
+                }
+        );
 
-        this.finishConvert(outputDirectory, isAllSuccess);
+
     }
 
     private void finishConvert(File outputDirectory, boolean isAllSuccess) {
-        this.isConvertingInProgress = false;
-        this.toggleConvertingState();
+        safeUpdateProgress(1);
 
-//        App.openFile(outputDirectory);
+        ImageUtil.safeJavaFxExecute((data) -> {
+            this.isConvertingInProgress = false;
+            this.toggleConvertingState();
 
-        this.informResult(isAllSuccess, outputDirectory);
+            this.informResult(isAllSuccess, outputDirectory);
 
-        this.goBackToList();
+            this.goBackToList();
+        });
+
 
     }
 
@@ -417,13 +477,13 @@ public class ImageListController {
         String savedFolder = outputDirectory.getAbsolutePath();
 
         Text msgText = new Text(
-                isAllSuccess ?    "All done. " + (
+                isAllSuccess ? "All done. " + (
 
                         this.imageFileList.size() > 1
                                 ? this.imageFileList.size() + " images(" + this.convertFormat + ") are"
                                 : this.imageFileList.size() + " image(" + this.convertFormat + ")  is"
                 ) + " saved in "
-                        :  "Some images could not be converted. Please check "
+                        : "Some images could not be converted. Please check "
         );
 
         Hyperlink folderPathText = new Hyperlink(savedFolder);
@@ -460,13 +520,10 @@ public class ImageListController {
     }
 
     private void toggleConvertingState() {
+
         this.startConvertButton.setText(this.isConvertingInProgress ? "Converting" : "Pick download directory");
         this.startConvertButton.setDisable(this.isConvertingInProgress || this.getFormat().equals("Select Format"));
         this.convertFormatSplitMenuButton.setDisable(this.isConvertingInProgress);
-
-        if (this.isConvertingInProgress) {
-            this.progressBar = this.prepareProgressBar();
-        }
 
         this.renderEditConvertState();
 
@@ -570,6 +627,8 @@ public class ImageListController {
 
         this.setNodeVisibility(this.startConvertButton, false);
 
+        this.listenImageConvertingMessage();
+
     }
 
     private void setConvertFormat(String format) {
@@ -577,15 +636,19 @@ public class ImageListController {
         this.setNodeVisibility(this.startConvertButton, true);
     }
 
-    private ProgressBar prepareProgressBar() {
+    private void prepareProgressBar() {
+
         VBox vBox = new VBox();
         ProgressBar progressBar = new ProgressBar(.1);
+
+        this.progressBar = progressBar;
+        this.progressText = new Text("Converting");
+
         vBox.getChildren().addAll(
-                new Text("Converting"),
-                progressBar
+                this.progressText,
+                this.progressBar
         );
         this.notifyInfo(vBox);
-        return progressBar;
     }
 
     private void toggleImageListOpacity() {
@@ -650,6 +713,7 @@ public class ImageListController {
         this.notify(message, "alert", "alert-warn");
 
     }
+
     private void notifyWarn(Node node) {
         this.notify(node, "alert", "alert-warn");
 
