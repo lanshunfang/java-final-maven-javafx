@@ -411,7 +411,7 @@ public class ImageListController {
                 File currentFile = this.imageFileList.get(index);
 
                 if (fileImageContainerHashMap.containsKey(currentFile)) {
-                    return;
+                    continue;
                 }
 
                 int columnIndex = index % columnCount;
