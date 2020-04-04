@@ -109,6 +109,7 @@ public class ImageListController {
     private void updateImageModel(Consumer<List<ImageWrapper>> consumer) {
         ImageUtil.updateImageListParallel(
                 imageFileList,
+                imageWrapperList,
 
                 (loadResult) -> {
 //                    this.notifyInfo(String.format("Loading %d image(s)", imageWrapperList.size(), ));
@@ -122,7 +123,7 @@ public class ImageListController {
                 (imageWrapperList) -> {
                     safeUpdateProgress(1, "Loaded");
 
-                    this.imageWrapperList.clear();
+//                    this.imageWrapperList.clear();
                     this.imageWrapperList.addAll(imageWrapperList);
                     consumer.accept(imageWrapperList);
                 });
@@ -390,7 +391,7 @@ public class ImageListController {
                 (imageWrapperList) -> {
                     ImageUtil.safeJavaFxExecute((data) -> {
 //                        this.repaintImageList();
-                        this.notifyInfo(String.format("%s image(s) loaded", imageWrapperList.size()));
+                        this.notifyInfo(String.format("%s new image(s) loaded", imageWrapperList.size()));
                         this.toggleEditItemWrapper();
 
                     });

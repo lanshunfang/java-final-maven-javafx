@@ -105,6 +105,7 @@ public class ImageUtil {
 
     public static Task updateImageListParallel(
             List<File> imageFiles,
+            ArrayList<ImageWrapper> cachedImageWrapperList,
             Consumer<LoadResult> consumerInProgress,
             Consumer<List<ImageWrapper>> consumerDone
     ) {
@@ -122,7 +123,6 @@ public class ImageUtil {
                     getForkJoinPool().submit(
                             () -> {
                                 List<ImageWrapper> imageWrapperList = IntStream.range(0, imageFiles.size())
-                                        .parallel()
 
                                         .mapToObj(
                                                 i -> {
@@ -151,7 +151,17 @@ public class ImageUtil {
                                                 }
                                         )
 
-//                                        .filter(loadResult -> loadResult.imageWrapper.bufferedImage != null)
+                                        .filter(
+                                                loadResult ->
+                                                        !cachedImageWrapperList
+                                                        .stream()
+                                                                .anyMatch(
+                                                                        (theImageWrapper)
+                                                                                -> theImageWrapper.file == loadResult.imageWrapper.file
+                                                )
+                                        )
+
+                                        .parallel()
 
                                         .peek(
                                                 loadResult -> {
