@@ -37,4 +37,19 @@ public class StyleClass {
     }
 
 
+    public enum NodeClassEnum {
+        DeleteButton("delete-image-btn");
+
+        public final String value;
+
+        NodeClassEnum(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return this.value;
+        }
+    }
+
 }

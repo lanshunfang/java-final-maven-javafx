@@ -2,10 +2,7 @@ package org.openjfx;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -118,7 +115,7 @@ public class ImageListController {
                     safeUpdateProgress(loadResult.progress, "Loading");
 
                     ImageUtil.safeJavaFxExecute((data) -> {
-                            showLoadedImageToContainer(loadResult);
+                        showLoadedImageToContainer(loadResult);
                     });
 
                 },
@@ -137,7 +134,7 @@ public class ImageListController {
 
         StackPane stackPane = this.fileImageContainerHashMap.get(imageWrapper.file);
 
-//        Node deleteHandler = getDeleteHandler(imageWrapper);
+        Node deleteHandler = getDeleteHandler(imageWrapper);
 
         ImageView imageView = ImageUtil.getImageViewByImage(imageWrapper.image, "", 100, 100);
 
@@ -149,11 +146,11 @@ public class ImageListController {
                 imageView
         );
 
-//        if (deleteHandler != null) {
-//            stackPane.getChildren().add(
-//                    deleteHandler
-//            );
-//        }
+        if (deleteHandler != null) {
+            stackPane.getChildren().add(
+                    deleteHandler
+            );
+        }
 
         Node formatLabel = this.getImageFormatTag(imageWrapper.file);
         if (formatLabel != null) {
@@ -164,82 +161,82 @@ public class ImageListController {
         }
 
     }
-
-    private void repaintImageList() {
-
-        this.notifyInfo("Loading images");
-
-        gridPane.getChildren().clear();
-
-        this.toggleEditItemWrapper();
-
-        if (imageFileList.size() == 0) {
-            setDefaultImagePlaceholder();
-            return;
-        }
-
-        int columnCount = 3;
-
-        for (ImageWrapper imageWrapper : imageWrapperList) {
-
-            try {
-
-                if (imageWrapper.isMarkedToDelete) {
-                    continue;
-                }
-
-                int columnIndex = imageWrapper.index % columnCount;
-
-                int rowIndex = imageWrapper.index / columnCount;
-
-                StackPane stackPane = new StackPane();
-                stackPane.getStyleClass().add("grid-cell");
-
-                Node deleteHandler = getDeleteHandler(imageWrapper);
-
-                StringBuilder styleClasses = new StringBuilder();
-                if (columnIndex == 0) {
-                    styleClasses.append("first-column");
-                }
-                if (rowIndex == 0) {
-                    styleClasses.append("first-row");
-                }
-
-                ImageView imageView = ImageUtil.getImageViewByImage(imageWrapper.image, styleClasses.toString(), 100, 100);
-
-                this.navigateToDetailOnClick(imageView, imageWrapper.file);
-
-                stackPane.getChildren().add(
-                        imageView
-                );
-
-                if (deleteHandler != null) {
-                    stackPane.getChildren().add(
-                            deleteHandler
-                    );
-                }
-
-                Node formatLabel = this.getImageFormatTag(imageWrapper.file);
-                if (formatLabel != null) {
-                    stackPane.getChildren().add(
-                            formatLabel
-                    );
-                    StackPane.setAlignment(formatLabel, Pos.TOP_RIGHT);
-                }
-
-                fileImageContainerHashMap.put(imageWrapper.file, stackPane);
-                gridPane.add(stackPane, columnIndex, rowIndex);
-
-                columnIndex++;
-
-            } catch (Exception err) {
-                err.printStackTrace();
-            }
-        }
-
-        this.notifyInfo(this.imageFileList.size() > 0 ? "Images loaded" : "");
-
-    }
+//
+//    private void repaintImageList() {
+//
+//        this.notifyInfo("Loading images");
+//
+//        gridPane.getChildren().clear();
+//
+//        this.toggleEditItemWrapper();
+//
+//        if (imageFileList.size() == 0) {
+//            setDefaultImagePlaceholder();
+//            return;
+//        }
+//
+//        int columnCount = 3;
+//
+//        for (ImageWrapper imageWrapper : imageWrapperList) {
+//
+//            try {
+//
+//                if (imageWrapper.isMarkedToDelete) {
+//                    continue;
+//                }
+//
+//                int columnIndex = imageWrapper.index % columnCount;
+//
+//                int rowIndex = imageWrapper.index / columnCount;
+//
+//                StackPane stackPane = new StackPane();
+//                stackPane.getStyleClass().add("grid-cell");
+//
+//                Node deleteHandler = getDeleteHandler(imageWrapper);
+//
+//                StringBuilder styleClasses = new StringBuilder();
+//                if (columnIndex == 0) {
+//                    styleClasses.append("first-column");
+//                }
+//                if (rowIndex == 0) {
+//                    styleClasses.append("first-row");
+//                }
+//
+//                ImageView imageView = ImageUtil.getImageViewByImage(imageWrapper.image, styleClasses.toString(), 100, 100);
+//
+//                this.navigateToDetailOnClick(imageView, imageWrapper.file);
+//
+//                stackPane.getChildren().add(
+//                        imageView
+//                );
+//
+//                if (deleteHandler != null) {
+//                    stackPane.getChildren().add(
+//                            deleteHandler
+//                    );
+//                }
+//
+//                Node formatLabel = this.getImageFormatTag(imageWrapper.file);
+//                if (formatLabel != null) {
+//                    stackPane.getChildren().add(
+//                            formatLabel
+//                    );
+//                    StackPane.setAlignment(formatLabel, Pos.TOP_RIGHT);
+//                }
+//
+//                fileImageContainerHashMap.put(imageWrapper.file, stackPane);
+//                gridPane.add(stackPane, columnIndex, rowIndex);
+//
+//                columnIndex++;
+//
+//            } catch (Exception err) {
+//                err.printStackTrace();
+//            }
+//        }
+//
+//        this.notifyInfo(this.imageFileList.size() > 0 ? "Images loaded" : "");
+//
+//    }
 
     @FXML
     public void onCloseNotificationAction() {
@@ -283,11 +280,14 @@ public class ImageListController {
         return label;
     }
 
-    private Node getDeleteHandler(ImageWrapper imageWrapper) {
+    private void updateDeleteHandlerVisibility(StackPane stackPane) {
 
-        if (!this.isEditing) {
-            return null;
-        }
+        Node deleteButton = stackPane.lookup("." + StyleClass.NodeClassEnum.DeleteButton.toString());
+        this.setNodeVisibility(deleteButton, this.isEditing);
+
+    }
+
+    private Node getDeleteHandler(ImageWrapper imageWrapper) {
 
         Button removeBtn = new Button("Remove");
 
@@ -300,7 +300,7 @@ public class ImageListController {
 
         ImageUtil.configImageView(btnImageView, 16, 16);
 
-        btnImageView.getStyleClass().add("delete-image-btn");
+        removeBtn.getStyleClass().add(StyleClass.NodeClassEnum.DeleteButton.toString());
 
         removeBtn.setGraphic(
                 btnImageView
@@ -308,26 +308,28 @@ public class ImageListController {
 
         {
             removeBtn.setOnAction(deleteEvent -> {
-                imageFileList.remove(imageWrapper.file);
-                setFileToView(null);
+//                imageFileList.remove(imageWrapper.file);
+                setFileToDetailsView(null);
 
-                this.deletePhotoNode(imageWrapper.file);
-                imageWrapper.isMarkedToDelete = true;
-//                this.repaintImageList();
+                imageWrapper.isMarkedToDelete = !imageWrapper.isMarkedToDelete;
+                // imageWrapper.isMarkedToDelete ? "Un-delete" :
+                this.deletePhotoNode(imageWrapper, (Button)deleteEvent.getTarget());
             });
         }
 
+        this.setNodeVisibility(removeBtn, false);
+
         return removeBtn;
-//        return null;
     }
 
-    private void deletePhotoNode(File file) {
-        if (!this.fileImageContainerHashMap.containsKey(file)) {
+    private void deletePhotoNode(ImageWrapper imageWrapper, Button deleteBtn) {
+        if (!this.fileImageContainerHashMap.containsKey(imageWrapper.file)) {
             System.out.println("[WARN] Photo is not found in hashmap");
         }
-        Node photoNode = this.fileImageContainerHashMap.get(file);
+        StackPane photoNode = this.fileImageContainerHashMap.get(imageWrapper.file);
 
-        photoNode.setOpacity(0.2);
+        photoNode.setOpacity(imageWrapper.isMarkedToDelete ? 0.2 : 1);
+        deleteBtn.setText(imageWrapper.isMarkedToDelete ? "Un-delete" : "Remove");
 
     }
 
@@ -338,30 +340,30 @@ public class ImageListController {
                 return;
             }
 
-            setFileToView(file);
+            setFileToDetailsView(file);
             Router.navigateToDetailView();
         });
     }
 
-    private void setFileToView(File file) {
+    private void setFileToDetailsView(File file) {
         messaging.postMessage(SubjectEnum.ImageIdToShow, file);
     }
-
-    private void setDefaultImagePlaceholder() {
-
-        gridPane.getChildren().clear();
-        gridPane.add(
-                ImageUtil.configImageView(new ImageView(
-                                ImageUtil.getDefaultImage()
-                        ),
-                        100,
-                        100
-                ),
-                0,
-                0
-        );
-
-    }
+//
+//    private void setDefaultImagePlaceholder() {
+//
+//        gridPane.getChildren().clear();
+//        gridPane.add(
+//                ImageUtil.configImageView(new ImageView(
+//                                ImageUtil.getDefaultImage()
+//                        ),
+//                        100,
+//                        100
+//                ),
+//                0,
+//                0
+//        );
+//
+//    }
 
     @FXML
     public void onPickImageAction(Event event) {
@@ -407,6 +409,10 @@ public class ImageListController {
             try {
 
                 File currentFile = this.imageFileList.get(index);
+
+                if (fileImageContainerHashMap.containsKey(currentFile)) {
+                    return;
+                }
 
                 int columnIndex = index % columnCount;
 
@@ -470,8 +476,6 @@ public class ImageListController {
     }
 
     private void toggleEditState() {
-//        this.repaintImageList();
-
         if (this.isEditing) {
             this.editButton.setText("Done Editing");
         } else {
@@ -652,13 +656,14 @@ public class ImageListController {
 
     }
 
-    private void updateProgress() {
-
-    }
-
     private void renderEditConvertState() {
         this.toggleEditState();
         this.toggleConvertMode();
+        Iterator iterator = this.fileImageContainerHashMap.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            this.updateDeleteHandlerVisibility((StackPane) ((Map.Entry)iterator.next()).getValue());
+        }
     }
 
     private void toggleConvertMode() {

@@ -5,6 +5,7 @@ import org.openjfx.App;
 import java.net.URL;
 
 public class MsIsConstant {
+
     public enum ComponentEnum {
         ImageList("ImageList"),
         ImageDetail("ImageDetail");
@@ -67,5 +68,7 @@ public class MsIsConstant {
 
 
     }
+
+
 
 }
