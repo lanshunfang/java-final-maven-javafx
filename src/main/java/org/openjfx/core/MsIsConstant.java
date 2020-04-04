@@ -5,6 +5,7 @@ import org.openjfx.App;
 import java.net.URL;
 
 public class MsIsConstant {
+
     public enum ComponentEnum {
         ImageList("ImageList"),
         ImageDetail("ImageDetail");
@@ -25,6 +26,7 @@ public class MsIsConstant {
     public enum PathEnum {
         StyleCss("style.css"),
         ClosePng("images/close.png"),
+        LoadingGif("images/loading.gif"),
         ImagePlaceholder("images/placeholder.png");
 
         public final String path;
@@ -44,7 +46,8 @@ public class MsIsConstant {
 
     public enum ImageConvertingFormatEnum {
         Jpg("JPG", "jpg"),
-        Png("PNG", "png");
+        Png("PNG", "png"),
+        Gif("GIF", "gif");
 
         public final String displayValue;
         public final String formatValue;
@@ -65,5 +68,7 @@ public class MsIsConstant {
 
 
     }
+
+
 
 }

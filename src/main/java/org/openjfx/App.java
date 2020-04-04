@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -15,6 +16,7 @@ import org.kordamp.bootstrapfx.scene.layout.Panel;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 import org.openjfx.core.MsIsConstant.*;
@@ -30,6 +32,8 @@ public class App extends Application {
     private static Scene scene;
 
     private static ScreenController screenController;
+
+    public static Desktop desktop = Desktop.getDesktop();
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -76,7 +80,13 @@ public class App extends Application {
     ) {
         fileChooser.setTitle("Choose Pictures");
 
-        FileChooser.ExtensionFilter fileExtensions =new FileChooser.ExtensionFilter("Images","*.jpg", "*.png");
+//        FileChooser.ExtensionFilter fileExtensions = new FileChooser.ExtensionFilter("Images","*.jpg", "*.png");
+        FileChooser.ExtensionFilter fileExtensions = new FileChooser.ExtensionFilter(
+                "Images",
+                "*.jpg",
+                "*.png",
+                "*.gif"
+        );
         fileChooser.getExtensionFilters().add(fileExtensions);
 
     }
@@ -88,6 +98,35 @@ public class App extends Application {
 
         return fileChooser.showOpenMultipleDialog(stage);
 
+    }
+    static File openDirectoryChooser() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        return directoryChooser.showDialog(stage);
+
+    }
+
+    static void openFile(File file) {
+        try {
+            desktop.open(file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    static void openUrl(String url) {
+        try {
+            desktop.browse(new URL(url).toURI());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void sleep(int milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static Parent loadFXML(ComponentEnum componentEnum) throws IOException {

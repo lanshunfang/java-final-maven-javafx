@@ -6,7 +6,8 @@ public interface MessageObject {
     }
 
     enum SubjectEnum {
-        ImageIdToShow
+        ImageIdToShow,
+        ImageConvertingInProgress,
     }
 
 }

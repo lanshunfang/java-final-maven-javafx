@@ -6,6 +6,7 @@ module hellofx {
     requires java.logging;
     requires javafx.swing;
     requires org.kordamp.bootstrapfx.core;
+
     requires jdk.jfr;
 
     opens org.openjfx to javafx.fxml;

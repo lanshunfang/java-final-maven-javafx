@@ -4,6 +4,9 @@
 .padding-10 {
     -fx-padding: 10px;
 }
+.padding-5 {
+    -fx-padding: 5px;
+}
 .gap-margin {
     -fx-padding: 5px;
 }
@@ -12,4 +15,22 @@
     -fx-pref-width: 0;
     -fx-pref-height: 0;
     -fx-opacity: 0;
+}
+
+.root {
+    -fx-font-size: 12pt;
+    -fx-font-family: "Arial";
+}
+.font-small {
+    -fx-font-size: 9pt;
+}
+.font-italic {
+    -fx-font-style: italic;
+}
+.font-white {
+    -fx-fill: #fff;
+}
+
+.bg-white-opacity-7 {
+    -fx-background-color:rgba(255,255,255,1);
 }

@@ -20,7 +20,7 @@
 <?import javafx.scene.text.TextFlow?>
 <?import javafx.scene.control.Hyperlink?>
 <Panel
-        styleClass="panel-primary, center-align"
+        styleClass="root, panel-primary, center-align"
         xmlns="http://javafx.com/javafx/11.0.1"
         xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageListController">
 
@@ -33,11 +33,31 @@
                 <Text text="Image Processor" styleClass="h2"/>
                 <Label
                         styleClass="gap-margin" text=" "></Label>
-                <TextFlow
-                        textAlignment="CENTER"
-                        fx:id="globalNotificationTextFlowAlert"
-                        styleClass="alert, alert-info">
-                </TextFlow>
+                <HBox
+
+                        fx:id="globalNotificationContainer">
+                    <TextFlow
+                            HBox.hgrow="ALWAYS"
+                            textAlignment="CENTER"
+                            fx:id="globalNotificationTextFlowAlert">
+                    </TextFlow>
+
+                    <Label
+                            HBox.hgrow="NEVER"
+                            styleClass="gap-margin" text=" "></Label>
+                    <ImageView
+                            HBox.hgrow="NEVER"
+                            fitHeight="20.0"
+                            fitWidth="20.0"
+
+                            onMouseClicked="#onCloseNotificationAction"
+                    >
+                        <image>
+                            <Image fx:id="closeImg" url="@../images/close.png"/>
+                        </image>
+                    </ImageView>
+                </HBox>
+
                 <Label
                         styleClass="gap-margin" text=" "></Label>
             </VBox>
@@ -83,7 +103,7 @@
                             alignment="CENTER"
                             styleClass="center-align"
 
-                          fx:id="defaultActionContainer">
+                            fx:id="defaultActionContainer">
                         <Button
                                 fx:id="pickButton"
                                 styleClass="btn, btn-default"
@@ -115,24 +135,24 @@
                                 styleClass="gap-margin" text=" "></Label>
 
                         <Button styleClass="btn, btn-default"
-                                fx:id="cancelConvertButton"
-                                onAction="#onCancelConvertImageListAction" text="Cancel Converting"/>
+                                fx:id="goBackButton"
+                                onAction="#onGoBackImageListAction" text="Back"/>
+                        <Label
+                                styleClass="gap-margin" text=" "></Label>
+
+
+                        <SplitMenuButton
+                                styleClass="split-menu-btn,split-menu-btn-primary"
+                                fx:id="convertFormatSplitMenuButton"
+                                text="Select Format"
+                        >
+                        </SplitMenuButton>
                         <Label
                                 styleClass="gap-margin" text=" "></Label>
 
                         <Button styleClass="btn, btn-primary"
                                 fx:id="startConvertButton"
-                                onAction="#onStartConvertImageListAction" text="Start Convert"/>
-
-                        <Label
-                                styleClass="gap-margin" text=" "></Label>
-
-                        <SplitMenuButton
-                                styleClass="split-menu-btn,split-menu-btn-primary"
-                                fx:id="convertFormatSplitMenuButton"
-                                text="Format"
-                        >
-                        </SplitMenuButton>
+                                onAction="#onStartConvertImageListAction" text="Pick download directory"/>
                     </HBox>
 
 
@@ -153,7 +173,11 @@
                     fx:id="copyright">
                 <Text
                         text="Author: Heyao Liu, Shunfang Lan"></Text>
-                <Hyperlink text="https://github.com/lanshunfang/java-final-maven-javafx"></Hyperlink>
+                <Hyperlink
+                        fx:id="projectUrl"
+                        text="https://github.com/lanshunfang/java-final-maven-javafx"
+                           onMouseClicked="#openProjectUrl"
+                ></Hyperlink>
             </TextFlow>
         </bottom>
 
