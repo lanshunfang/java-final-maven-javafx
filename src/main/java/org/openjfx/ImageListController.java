@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,7 +68,7 @@ public class ImageListController {
     @FXML
     public SplitMenuButton convertFormatSplitMenuButton;
 
-    public HashMap<File, Node> fileNodeHashMap = new HashMap<>();
+    public HashMap<File, StackPane> fileImageContainerHashMap = new HashMap<>();
 
     public ProgressBar progressBar;
     public Text progressText;
@@ -108,12 +109,60 @@ public class ImageListController {
         this.pickButton.setTooltip(tooltip);
     }
 
-    private void updateImageModel() {
-        List<ImageWrapper> imageWrapperList = ImageUtil.getImageList(imageFileList);
+    private void updateImageModel(Consumer<List<ImageWrapper>> consumer) {
+        ImageUtil.updateImageListParallel(
+                imageFileList,
 
-        this.imageWrapperList.clear();
-        ;
-        this.imageWrapperList.addAll(imageWrapperList);
+                (loadResult) -> {
+//                    this.notifyInfo(String.format("Loading %d image(s)", imageWrapperList.size(), ));
+                    safeUpdateProgress(loadResult.progress, "Loading");
+
+                    ImageUtil.safeJavaFxExecute((data) -> {
+                            showLoadedImageToContainer(loadResult);
+                    });
+
+                },
+                (imageWrapperList) -> {
+                    safeUpdateProgress(1, "Loaded");
+
+                    this.imageWrapperList.clear();
+                    this.imageWrapperList.addAll(imageWrapperList);
+                    consumer.accept(imageWrapperList);
+                });
+
+    }
+
+    private void showLoadedImageToContainer(ImageUtil.LoadResult loadResult) {
+        ImageWrapper imageWrapper = loadResult.imageWrapper;
+
+        StackPane stackPane = this.fileImageContainerHashMap.get(imageWrapper.file);
+
+//        Node deleteHandler = getDeleteHandler(imageWrapper);
+
+        ImageView imageView = ImageUtil.getImageViewByImage(imageWrapper.image, "", 100, 100);
+
+        this.navigateToDetailOnClick(imageView, imageWrapper.file);
+
+        stackPane.getChildren().clear();
+
+        stackPane.getChildren().add(
+                imageView
+        );
+
+//        if (deleteHandler != null) {
+//            stackPane.getChildren().add(
+//                    deleteHandler
+//            );
+//        }
+
+        Node formatLabel = this.getImageFormatTag(imageWrapper.file);
+        if (formatLabel != null) {
+            stackPane.getChildren().add(
+                    formatLabel
+            );
+            StackPane.setAlignment(formatLabel, Pos.TOP_RIGHT);
+        }
+
     }
 
     private void repaintImageList() {
@@ -178,7 +227,7 @@ public class ImageListController {
                     StackPane.setAlignment(formatLabel, Pos.TOP_RIGHT);
                 }
 
-                fileNodeHashMap.put(imageWrapper.file, stackPane);
+                fileImageContainerHashMap.put(imageWrapper.file, stackPane);
                 gridPane.add(stackPane, columnIndex, rowIndex);
 
                 columnIndex++;
@@ -273,10 +322,10 @@ public class ImageListController {
     }
 
     private void deletePhotoNode(File file) {
-        if (!this.fileNodeHashMap.containsKey(file)) {
+        if (!this.fileImageContainerHashMap.containsKey(file)) {
             System.out.println("[WARN] Photo is not found in hashmap");
         }
-        Node photoNode = this.fileNodeHashMap.get(file);
+        Node photoNode = this.fileImageContainerHashMap.get(file);
 
         photoNode.setOpacity(0.2);
 
@@ -300,6 +349,7 @@ public class ImageListController {
 
     private void setDefaultImagePlaceholder() {
 
+        gridPane.getChildren().clear();
         gridPane.add(
                 ImageUtil.configImageView(new ImageView(
                                 ImageUtil.getDefaultImage()
@@ -328,11 +378,82 @@ public class ImageListController {
         if (this.imageFileList.size() > maxImageFiles) {
             this.notifyInfo("Only allow 50 images. Auto clear " + (this.imageFileList.size() - maxImageFiles) + " images");
             this.imageFileList.subList(0, maxImageFiles).clear();
+        } else {
+            this.notifyInfo(String.format("Loading %s image(s)", imageWrapperList.size()));
         }
 
-        this.updateImageModel();
+        this.prepareImageLoadingContainerList();
 
-        this.repaintImageList();
+        this.updateImageModel(
+                (imageWrapperList) -> {
+                    ImageUtil.safeJavaFxExecute((data) -> {
+//                        this.repaintImageList();
+                        this.notifyInfo(String.format("%s image(s) loaded", imageWrapperList.size()));
+                        this.toggleEditItemWrapper();
+
+                    });
+
+                }
+        );
+
+    }
+
+    private void prepareImageLoadingContainerList() {
+
+        int columnCount = 3;
+
+        for (int index = 0; index < this.imageFileList.size(); index++) {
+
+            try {
+
+                File currentFile = this.imageFileList.get(index);
+
+                int columnIndex = index % columnCount;
+
+                int rowIndex = index / columnCount;
+
+                StackPane stackPane = new StackPane();
+                stackPane.getStyleClass().add("grid-cell");
+
+                StringBuilder styleClasses = new StringBuilder();
+                if (columnIndex == 0) {
+                    styleClasses.append("first-column");
+                }
+                if (rowIndex == 0) {
+                    styleClasses.append("first-row");
+                }
+
+                ImageView imageView = ImageUtil.getImageViewByImage(null, styleClasses.toString(), 100, 100);
+
+                stackPane.getChildren().add(
+                        imageView
+                );
+
+                Node loadingImage = ImageUtil.getImageViewByImage(ImageUtil.getLoadingSpinner(), styleClasses.toString(), 100, 100);
+                Node formatLabel = new Label(String.format("%s", currentFile.getName()));
+
+                VBox vBox = new VBox();
+                vBox.getChildren().addAll(
+                        loadingImage,
+                        formatLabel
+                );
+
+                stackPane.getChildren().add(
+                        vBox
+                );
+
+                StackPane.setAlignment(vBox, Pos.CENTER);
+
+                fileImageContainerHashMap.put(currentFile, stackPane);
+                gridPane.add(stackPane, columnIndex, rowIndex);
+
+                columnIndex++;
+
+            } catch (Exception err) {
+                err.printStackTrace();
+            }
+        }
+
     }
 
 
@@ -393,32 +514,34 @@ public class ImageListController {
 
         this.messaging.onMessage(SubjectEnum.ImageConvertingInProgress, (inProgressData) -> {
             ImageUtil.ConvertResult convertResult = (ImageUtil.ConvertResult) inProgressData;
-            safeUpdateProgress(convertResult.progress);
+            safeUpdateProgress(convertResult.progress, "Converting");
 
         });
     }
 
-    private void safeUpdateProgress(double progress) {
+    private void safeUpdateProgress(double progress, String prefix) {
         Platform.runLater(() -> {
             double displayProgress = progress < 0.03 ? 0.03 : progress;
-            this.setProgress(displayProgress < 0.95 ? displayProgress : 0.95);
+            this.setProgress(displayProgress, prefix);
         });
     }
 
-    private void setProgress(double percentage) {
+    private void setProgress(double percentage, String prefix) {
         if (percentage >= 1) {
             this.progressBar = null;
             this.progressText = null;
-            this.notifyInfo("Done");
+            this.notifyInfo("Almost done");
             return;
         }
+
+        percentage = percentage < 0.95 ? percentage : 0.95;
 
         if (this.progressBar == null) {
             this.prepareProgressBar();
         }
 
         this.progressText.setText(
-                String.format("Converting: %3.2f%%", percentage * 100)
+                String.format("%s: %3.2f%%", prefix, percentage * 100)
         );
 
         this.progressBar.setProgress(percentage);
@@ -434,7 +557,7 @@ public class ImageListController {
 
         this.toggleConvertingState();
 
-        safeUpdateProgress(0.05);
+        safeUpdateProgress(0.05, "Converting");
 
         ImageUtil.convertParallel(
 //                this.imageFileList,
@@ -454,7 +577,7 @@ public class ImageListController {
     }
 
     private void finishConvert(File outputDirectory, boolean isAllSuccess) {
-        safeUpdateProgress(1);
+        safeUpdateProgress(1, "Done");
 
         ImageUtil.safeJavaFxExecute((data) -> {
             this.isConvertingInProgress = false;

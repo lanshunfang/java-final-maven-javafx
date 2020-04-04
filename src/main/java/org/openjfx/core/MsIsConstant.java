@@ -25,6 +25,7 @@ public class MsIsConstant {
     public enum PathEnum {
         StyleCss("style.css"),
         ClosePng("images/close.png"),
+        LoadingGif("images/loading.gif"),
         ImagePlaceholder("images/placeholder.png");
 
         public final String path;

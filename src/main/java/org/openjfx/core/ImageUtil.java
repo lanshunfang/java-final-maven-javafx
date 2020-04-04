@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -33,6 +34,15 @@ public class ImageUtil {
         public ConvertResult(ImageWrapper imageWrapper, boolean isDone) {
             this.imageWrapper = imageWrapper;
             this.isDone = isDone;
+        }
+    }
+
+    public static class LoadResult {
+        public ImageWrapper imageWrapper;
+        public double progress = 0;
+
+        public LoadResult(ImageWrapper imageWrapper) {
+            this.imageWrapper = imageWrapper;
         }
     }
 
@@ -81,63 +91,115 @@ public class ImageUtil {
     public static Image getDefaultImage() {
         return new Image(MsIsConstant.PathEnum.ImagePlaceholder.toString());
     }
+    public static Image getLoadingSpinner() {
+        try {
+            FileInputStream inputstream = new FileInputStream(MsIsConstant.PathEnum.LoadingGif.toString());
+            return new Image(inputstream);
+        } catch (Exception e) {
+
+        }
+        return null;
+
+    }
 
 
-    public static List<ImageWrapper> getImageList(List<File> imageFiles) {
-        return IntStream.range(0, imageFiles.size())
-                .parallel()
+    public static Task updateImageListParallel(
+            List<File> imageFiles,
+            Consumer<LoadResult> consumerInProgress,
+            Consumer<List<ImageWrapper>> consumerDone
+    ) {
 
-                .mapToObj(
-                        i -> {
-                            File currentFile = imageFiles.get(i);
+        Task javafxTask = new Task<Void>() {
+            @Override
+            public Void call() {
 
-                            BufferedImage bufferedImage = null;
-                            try {
-                                bufferedImage = ImageIO.read(
-                                        currentFile
-                                );
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                try {
+
+                    ArrayList<ImageUtil.LoadResult> counter = new ArrayList<>();
+
+                    double imageLength = imageFiles.size();
+
+                    getForkJoinPool().submit(
+                            () -> {
+                                List<ImageWrapper> imageWrapperList = IntStream.range(0, imageFiles.size())
+                                        .parallel()
+
+                                        .mapToObj(
+                                                i -> {
+                                                    File currentFile = imageFiles.get(i);
+
+//                                                    BufferedImage bufferedImage = null;
+//                                                    try {
+//                                                        bufferedImage = ImageIO.read(
+//                                                                currentFile
+//                                                        );
+//                                                    } catch (Exception e) {
+//                                                        e.printStackTrace();
+//                                                    }
+
+                                                    ImageWrapper imageWrapper = new ImageWrapper(
+                                                            i,
+                                                            currentFile,
+
+                                                            null,
+                                                            null
+                                                    );
+
+                                                    return new LoadResult(imageWrapper);
+
+
+                                                }
+                                        )
+
+//                                        .filter(loadResult -> loadResult.imageWrapper.bufferedImage != null)
+
+                                        .peek(
+                                                loadResult -> {
+//
+//                                                    loadResult.imageWrapper.image = getImageFromBufferedImage(
+//                                                            loadResult.imageWrapper.bufferedImage
+//                                                    );
+                                                    loadResult.imageWrapper.image = getImageFromFile(
+                                                            loadResult.imageWrapper.file
+                                                    );
+
+                                                }
+                                        )
+                                        .peek(result -> {
+
+                                            counter.add(result);
+                                            result.progress = (double) counter.size() / imageLength;
+
+                                            consumerInProgress.accept(result);
+
+                                        })
+                                        .filter(loadResult -> loadResult.imageWrapper.image != null)
+                                        .sorted(
+                                                Comparator.comparingInt((a) -> a.imageWrapper.index)
+                                        )
+
+                                        .map(loadResult -> loadResult.imageWrapper)
+
+                                        .collect(Collectors.toList());
+
+                                consumerDone.accept(imageWrapperList);
                             }
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-                            ImageWrapper imageWrapper = new ImageWrapper(
-                                    i,
-                                    currentFile,
+                return null;
+            }
+        };
 
-                                    bufferedImage,
-                                    null
-                            );
+        Thread convertingThread = new Thread(javafxTask);
 
-                            return imageWrapper;
+        convertingThread.setDaemon(true);
+        convertingThread.start();
 
+        return javafxTask;
 
-                        }
-                )
-
-                .filter(imageWrapper -> imageWrapper.bufferedImage != null)
-
-                .map(
-                        imageWrapper -> {
-
-                            return new ImageWrapper(
-                                    imageWrapper.index,
-                                    imageWrapper.file,
-                                    imageWrapper.bufferedImage,
-                                    getImageFromBufferedImage(imageWrapper.bufferedImage)
-
-                            );
-
-
-                        }
-                )
-                .filter(imageWrapper -> imageWrapper.image != null)
-                .sorted(
-                        Comparator.comparingInt(ImageWrapper::getIndex)
-                )
-
-                .collect(Collectors.toList())
-
-                ;
     }
 
     static Image getImageFromBufferedImage(BufferedImage bufferedImage) {
@@ -156,71 +218,12 @@ public class ImageUtil {
 
     static Image getImageFromFile(File file) {
         try {
-            return getImageFromBufferedImage(ImageIO.read(file));
+//            return getImageFromBufferedImage(ImageIO.read(file));
+            return new Image(file.toURI().toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static List<Future<HashMap<File, Image>>> loadImage(List<File> imageFiles, LambdaInvoke lambdaInvoke) {
-        List<Future<HashMap<File, Image>>> results = null;
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        List<ImageLoadingTask> tasks = new ArrayList<>(imageFiles.size());
-        for (File file : imageFiles) {
-            tasks.add(new ImageLoadingTask(file));
-        }
-        try {
-            results = executorService.invokeAll(tasks);
-
-            results.stream().forEach((imagePromise) -> {
-
-                try {
-                    while (!imagePromise.isDone()) {
-                        Thread.sleep(300);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return;
-                }
-
-                try {
-                    HashMap<File, Image> record = imagePromise.get();
-                    lambdaInvoke.invoke(record);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
-        executorService.shutdown();
-
-        return results;
-    }
-
-    public static class ImageLoadingTask implements Callable<HashMap<File, Image>> {
-
-        private File file;
-
-        public ImageLoadingTask(File file) {
-            this.file = file;
-        }
-
-        @Override
-        public HashMap<File, Image> call() throws Exception {
-            HashMap<File, Image> hashMap = new HashMap<>();
-            hashMap.put(
-                    this.file,
-                    getImageFromFile(file)
-            );
-            return hashMap;
-
-
-        }
-
     }
 
     public static class ImageWrapper {
@@ -236,10 +239,6 @@ public class ImageUtil {
             this.bufferedImage = bufferedImage;
             this.image = image;
             this.file = file;
-        }
-
-        public int getIndex() {
-            return this.index;
         }
 
     }
