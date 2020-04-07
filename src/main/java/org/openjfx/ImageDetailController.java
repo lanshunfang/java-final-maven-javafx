@@ -1,19 +1,18 @@
 package org.openjfx;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifThumbnailDirectory;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import org.openjfx.core.*;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.stream.ImageInputStream;
 import java.io.File;
-import java.util.Iterator;
 
 //------------------------
+import com.drew.lang.GeoLocation;
+import com.drew.metadata.exif.GpsDirectory;
 //---------------------------
 //import javax.imageio.metadata.IIOMetadata;
 //import javafx.scene.media.Media.Metadata;
@@ -31,20 +30,41 @@ public class ImageDetailController {
 
     @FXML
     public HBox imageViewContainer;
+    @FXML
+    public Label latitude;//命名规范--naming convention
 
     @FXML
     public void initialize() {
         messaging.onMessage(MessageObject.SubjectEnum.ImageIdToShow, (file) -> {
             //Metadata metadata=new Metadata();//ImageMetadataReader.readMetadata((File)file);
-            readAndDisplayMetadata((File) file);
             this.imageViewContainer.getChildren().clear();
             this.imageViewContainer.getChildren().add(
                     ImageUtil.getImageViewByFile((File) file, "", 600, 400)
             );
+            Metadata metadata = ImageMetadataReader.readMetadata((File) file);
+            //ExifSubIFDDirectory directory=metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+            //Date date=directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+            /*ExifThumbnailDirectory thumbnailDirectory = metadata.getFirstDirectoryOfType(ExifThumbnailDirectory.class);
+            System.out.println("Camera owner name = "+thumbnailDirectory.getString(ExifThumbnailDirectory.TAG_CAMERA_OWNER_NAME));
+            System.out.println("make = "+thumbnailDirectory.getString(ExifThumbnailDirectory.TAG_MAKE));*/
+
+
+
+            GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
+            GeoLocation geoLocation = gpsDirectory.getGeoLocation();
+            double latitude = geoLocation.getLatitude();
+            double longitude = geoLocation.getLongitude();
+            this.latitude.setText("Latitude: " + latitude);/////////////////////////////////////
+            //Latitude=new Label(String.valueOf(latitude));
+            //imageViewContainer.getChildren().add(Latitude);
+            System.out.println("Latitude = " + latitude);
+            System.out.println("Longitude = " + longitude);
+            //assertEquals(54.989666666666665, geoLocation.getLatitude(),0.001);
+            //assertEquals(-1.9141666666666666, geoLocation.getLongitude(),0.001);
         });
     }
 
-    public void readAndDisplayMetadata(File file) {
+ /*   public void readAndDisplayMetadata(File file) {
         try{
             ImageInputStream iis=ImageIO.createImageInputStream(file);
             Iterator<ImageReader> readers=ImageIO.getImageReaders(iis);
@@ -102,6 +122,6 @@ public class ImageDetailController {
         // print close tag of element
         indent(level);
         System.out.println("</" + node.getNodeName() + ">");
-    }
+    }*/
 }
 

@@ -8,6 +8,7 @@ module hellofx {
     requires org.kordamp.bootstrapfx.core;
 
     requires jdk.jfr;
+    requires metadata.extractor;
 
     opens org.openjfx to javafx.fxml;
     exports org.openjfx;

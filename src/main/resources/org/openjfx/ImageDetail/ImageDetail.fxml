@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Button?>
-
 <?import java.net.URL?>
 <?import javafx.scene.layout.HBox?>
-
 <?import javafx.scene.layout.VBox?>
-
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<VBox styleClass="root, center-align" minHeight="300.0" minWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageDetailController">
+
+<VBox minHeight="300.0" minWidth="400.0" styleClass="root, center-align" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageDetailController">
     <children>
+      <Label fx:id="latitude" text="Latitude" />
         <HBox fx:id="imageViewContainer">
             <children>
                 <ImageView fitHeight="100.0" fitWidth="100.0">
@@ -21,11 +24,11 @@
                 </ImageView>
             </children>
         </HBox>
-        <Button text="Back" onAction="#switchToList" />
+        <Button onAction="#switchToList" text="Back" />
     </children>
 
     <stylesheets>
-        <URL value="@../styles.css"/>
-        <URL value="@ImageDetail.css"/>
+        <URL value="@../styles.css" />
+        <URL value="@ImageDetail.css" />
     </stylesheets>
 </VBox>
