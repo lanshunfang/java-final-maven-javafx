@@ -32,6 +32,8 @@ public class ImageDetailController {
     public HBox imageViewContainer;
     @FXML
     public Label latitude;//命名规范--naming convention
+    @FXML
+    public Label longitude;
 
     @FXML
     public void initialize() {
@@ -44,21 +46,28 @@ public class ImageDetailController {
             Metadata metadata = ImageMetadataReader.readMetadata((File) file);
             //ExifSubIFDDirectory directory=metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
             //Date date=directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-            /*ExifThumbnailDirectory thumbnailDirectory = metadata.getFirstDirectoryOfType(ExifThumbnailDirectory.class);
-            System.out.println("Camera owner name = "+thumbnailDirectory.getString(ExifThumbnailDirectory.TAG_CAMERA_OWNER_NAME));
-            System.out.println("make = "+thumbnailDirectory.getString(ExifThumbnailDirectory.TAG_MAKE));*/
+            ExifThumbnailDirectory thumbnailDirectory = metadata.getFirstDirectoryOfType(ExifThumbnailDirectory.class);
+            //System.out.println("Camera owner name = "+thumbnailDirectory.getString(ExifThumbnailDirectory.TAG_CAMERA_OWNER_NAME));
+            //System.out.println("make = "+thumbnailDirectory.getString(ExifThumbnailDirectory.TAG_MAKE));
 
 
 
             GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
             GeoLocation geoLocation = gpsDirectory.getGeoLocation();
-            double latitude = geoLocation.getLatitude();
-            double longitude = geoLocation.getLongitude();
-            this.latitude.setText("Latitude: " + latitude);/////////////////////////////////////
-            //Latitude=new Label(String.valueOf(latitude));
-            //imageViewContainer.getChildren().add(Latitude);
-            System.out.println("Latitude = " + latitude);
-            System.out.println("Longitude = " + longitude);
+            if (geoLocation==null){
+                this.latitude.setText("Latitude: null");
+                this.longitude.setText("Longitude: null");
+            }else{
+                double latitude = geoLocation.getLatitude();
+                double longitude = geoLocation.getLongitude();
+                //if (latitude)
+                this.latitude.setText("Latitude: " + String.format("%.2f",latitude));
+                this.longitude.setText("Longitude: " + String.format("%.2f",longitude));
+                System.out.println("Latitude = " + latitude);
+                System.out.println("Longitude = " + longitude);
+            }
+
+
             //assertEquals(54.989666666666665, geoLocation.getLatitude(),0.001);
             //assertEquals(-1.9141666666666666, geoLocation.getLongitude(),0.001);
         });
