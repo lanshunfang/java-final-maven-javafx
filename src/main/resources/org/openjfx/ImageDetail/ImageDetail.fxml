@@ -14,6 +14,7 @@
 
 <VBox minHeight="300.0" minWidth="400.0" styleClass="root, center-align" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageDetailController">
     <children>
+      <Label fx:id="cameraMakeAndModel" text="Camera Make and Model" />
       <Label fx:id="longitude" text="Longitude" />
       <Label fx:id="latitude" text="Latitude" />
         <HBox fx:id="imageViewContainer">
