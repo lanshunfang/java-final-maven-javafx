@@ -147,6 +147,13 @@
                                 text="Select Format"
                         >
                         </SplitMenuButton>
+
+                        <SplitMenuButton
+                                styleClass="split-menu-btn,split-menu-btn-primary"
+                                fx:id="convertFilterSplitMenuButton"
+                                text="Select Filter (optional)"
+                        >
+                        </SplitMenuButton>
                         <Label
                                 styleClass="gap-margin" text=" "></Label>
 

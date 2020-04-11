@@ -6,12 +6,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 
-import javax.imageio.ImageIO;
+//import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -91,6 +88,7 @@ public class ImageUtil {
     public static Image getDefaultImage() {
         return new Image(MsIsConstant.PathEnum.ImagePlaceholder.toString());
     }
+
     public static Image getLoadingSpinner() {
         try {
             FileInputStream inputstream = new FileInputStream(MsIsConstant.PathEnum.LoadingGif.toString());
@@ -154,11 +152,11 @@ public class ImageUtil {
                                         .filter(
                                                 loadResult ->
                                                         !cachedImageWrapperList
-                                                        .stream()
+                                                                .stream()
                                                                 .anyMatch(
                                                                         (theImageWrapper)
                                                                                 -> theImageWrapper.file == loadResult.imageWrapper.file
-                                                )
+                                                                )
                                         )
 
                                         .parallel()
@@ -169,7 +167,7 @@ public class ImageUtil {
 //                                                    loadResult.imageWrapper.image = getImageFromBufferedImage(
 //                                                            loadResult.imageWrapper.bufferedImage
 //                                                    );
-                                                    loadResult.imageWrapper.image = getImageFromFile(
+                                                    loadResult.imageWrapper.image = getImageThumbnailFromFile(
                                                             loadResult.imageWrapper.file
                                                     );
 
@@ -236,6 +234,16 @@ public class ImageUtil {
         return null;
     }
 
+    static Image getImageThumbnailFromFile(File file) {
+        try {
+//            return getImageFromBufferedImage(ImageIO.read(file));
+            return new Image(file.toURI().toString(), 100, 100, true, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static class ImageWrapper {
         public int index;
         public File file;
@@ -268,6 +276,7 @@ public class ImageUtil {
             ArrayList<ImageWrapper> imageWrapperList,
             File outputDirectory,
             String imageConvertFormat,
+            HashMap<String, ArrayList<String>> imageConvertParams,
             Predicate<ImageWrapper> fileSelector,
             Consumer<ConvertResult> consumerInProgress,
             Consumer<Boolean> consumerDone
@@ -299,7 +308,12 @@ public class ImageUtil {
 
                                                 try {
 
-                                                    convert(imageWrapper.file, outputDirectory, imageConvertFormat);
+                                                    convert(
+                                                            imageWrapper.file,
+                                                            outputDirectory,
+                                                            imageConvertFormat,
+                                                            imageConvertParams
+                                                    );
 
                                                     result.isDone = true;
 
@@ -368,7 +382,14 @@ public class ImageUtil {
         return directory;
     }
 
-    private static void convert(File inputFile, File outputDirectory, String format) throws Exception {
+    /**
+     * @param inputFile
+     * @param outputDirectory
+     * @param format
+     * @param extraCommandLineParams - For filters, etc. e.g. -threshold 15% -type bilevel
+     * @throws Exception
+     */
+    private static void convert(File inputFile, File outputDirectory, String format, HashMap<String, ArrayList<String>> extraCommandLineParams) throws Exception {
 
         String fileName = inputFile.getName().split("\\.")[0];
 
@@ -385,25 +406,42 @@ public class ImageUtil {
 
         boolean isWindows = System.getProperty("os.name")
                 .toLowerCase().startsWith("windows");
-        ProcessBuilder processBuilder = new ProcessBuilder();
 
         String binName = isWindows ? "magick.exe" : "magick";
 
-        processBuilder.command(binName, "convert", inputFile.getAbsolutePath(), outputFile);
+        ArrayList<String> commandLine = new ArrayList<>(Arrays.asList(
+                binName,
+                "convert",
+                inputFile.getAbsolutePath()
+        ));
+
+        extraCommandLineParams.entrySet().forEach(
+                (entry) -> {
+                    commandLine.addAll(entry.getValue());
+                }
+        );
+
+        commandLine.add(outputFile);
+
+        System.out.println("[INFO] Command line to execute");
+        System.out.println(commandLine);
 
 
-        Process process = processBuilder.start();
+        try {
 
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            System.out.println(line);
+            Process process = Runtime.getRuntime()
+                    .exec(
+                            Arrays.copyOf(
+                                    commandLine.toArray(),
+                                    commandLine.size(),
+                                    String[].class
+                            )
+                    );
+            System.out.println("ImageMagick Exit status = " + process.waitFor());
+        } catch (
+                InterruptedException e) {
+            e.printStackTrace();
         }
-
-        int exitCode = process.waitFor();
-        System.out.println("\nExited with error code : " + exitCode);
 
 
 //        } catch (Exception e) {

@@ -64,6 +64,8 @@ public class ImageListController {
 
     @FXML
     public SplitMenuButton convertFormatSplitMenuButton;
+    @FXML
+    public SplitMenuButton convertFilterSplitMenuButton;
 
     public HashMap<File, StackPane> fileImageContainerHashMap = new HashMap<>();
 
@@ -85,6 +87,8 @@ public class ImageListController {
     private boolean isConvertingInProgress;
 
     private String convertFormat = "";
+    private HashMap<String, ArrayList<String>> convertFilterParams = new HashMap();
+    private ArrayList<String> convertFilterParamsDisplay = new ArrayList<>();
 
     @FXML
     public void initialize() {
@@ -101,9 +105,15 @@ public class ImageListController {
     }
 
     private void setMaxImageFiles() {
-        Tooltip tooltip = new Tooltip("Maximum images: " + maxImageFiles);
-        tooltip.getStyleClass().addAll("tooltip-info");
-        this.pickButton.setTooltip(tooltip);
+        this.pickButton.setTooltip(
+                this.getTooltip("Maximum images: " + maxImageFiles)
+        );
+    }
+
+    private Tooltip getTooltip(String tooltip) {
+        Tooltip tooltipE = new Tooltip(tooltip);
+        tooltipE.getStyleClass().addAll("tooltip-info");
+        return tooltipE;
     }
 
     private void updateImageModel(Consumer<List<ImageWrapper>> consumer) {
@@ -314,7 +324,7 @@ public class ImageListController {
 
                 imageWrapper.isMarkedToDelete = !imageWrapper.isMarkedToDelete;
                 // imageWrapper.isMarkedToDelete ? "Un-delete" :
-                this.deletePhotoNode(imageWrapper, (Button)deleteEvent.getTarget());
+                this.deletePhotoNode(imageWrapper, (Button) deleteEvent.getTarget());
             });
         }
 
@@ -569,6 +579,7 @@ public class ImageListController {
                 this.imageWrapperList,
                 outputDirectoryUniq,
                 this.getFormat(),
+                this.convertFilterParams,
                 (imageWrapper) -> this.isConvertingInProgress && !imageWrapper.isMarkedToDelete,
                 (inProgressData) -> {
                     this.messaging.postMessage(SubjectEnum.ImageConvertingInProgress, inProgressData);
@@ -598,21 +609,28 @@ public class ImageListController {
 
     private void informResult(boolean isAllSuccess, File outputDirectory) {
 
-        HBox msgContainerHBox = new HBox();
+        HBox generateContainerHBox = new HBox();
+        VBox msgContainerVBox = new VBox();
 
-        msgContainerHBox.setAlignment(Pos.CENTER);
+        generateContainerHBox.setAlignment(Pos.CENTER);
 
         String savedFolder = outputDirectory.getAbsolutePath();
 
         Text msgText = new Text(
-                isAllSuccess ? "All done. " + (
+                isAllSuccess
+                        ? "All done. "
+                        + (
 
                         this.imageFileList.size() > 1
                                 ? this.imageFileList.size() + " images(" + this.convertFormat + ") are"
-                                : this.imageFileList.size() + " image(" + this.convertFormat + ")  is"
-                ) + " saved in "
+                                : this.imageFileList.size() + " image(" + this.convertFormat + ")  is")
+                        + " saved in "
                         : "Some images could not be converted. Please check "
         );
+
+        String filterDisplay = this.convertFilterParamsDisplay.size() > 0
+                ? "Applied filter(s): " + convertFilterParamsDisplay.toString()
+                : "";
 
         Hyperlink folderPathText = new Hyperlink(savedFolder);
 
@@ -628,17 +646,23 @@ public class ImageListController {
             App.openFile(outputDirectory);
         });
 
-        msgContainerHBox.getChildren().addAll(
+        msgContainerVBox.getChildren().addAll(
                 msgText,
                 folderPathText,
+                new Text(filterDisplay)
+
+        );
+
+        generateContainerHBox.getChildren().addAll(
+                msgContainerVBox,
                 NodeUtil.getPaddingNode(),
                 openDirectoryNode
         );
 
         if (isAllSuccess) {
-            this.notifyInfo(msgContainerHBox);
+            this.notifyInfo(generateContainerHBox);
         } else {
-            this.notifyWarn(msgContainerHBox);
+            this.notifyWarn(generateContainerHBox);
         }
 
     }
@@ -652,6 +676,7 @@ public class ImageListController {
         this.startConvertButton.setText(this.isConvertingInProgress ? "Converting" : "Pick download directory");
         this.startConvertButton.setDisable(this.isConvertingInProgress || this.getFormat().equals("Select Format"));
         this.convertFormatSplitMenuButton.setDisable(this.isConvertingInProgress);
+        this.convertFilterSplitMenuButton.setDisable(this.isConvertingInProgress);
 
         this.renderEditConvertState();
 
@@ -663,7 +688,7 @@ public class ImageListController {
         Iterator iterator = this.fileImageContainerHashMap.entrySet().iterator();
 
         while (iterator.hasNext()) {
-            this.updateDeleteHandlerVisibility((StackPane) ((Map.Entry)iterator.next()).getValue());
+            this.updateDeleteHandlerVisibility((StackPane) ((Map.Entry) iterator.next()).getValue());
         }
     }
 
@@ -721,8 +746,7 @@ public class ImageListController {
         this.setNodeVisibility(this.convertingWrapper, this.isConverting);
     }
 
-    private void initConvertTools() {
-
+    private void initFormatSplitMenu() {
         List<MenuItem> menuItems = Stream.of(ImageConvertingFormatEnum.values()).map(
                 enumItem -> {
                     MenuItem menuItem = new MenuItem(enumItem.toString());
@@ -745,13 +769,40 @@ public class ImageListController {
         this.convertFormatSplitMenuButton.getItems().addAll(
                 menuItems
         );
-//        this.convertFormatSplitMenuButton.setOnAction();
+    }
+
+    private void initFilterSplitMenu() {
+        List<MenuItem> menuItems = Stream.of(ImageConvertingFilterEnum.values()).map(
+                enumItem -> {
+                    MenuItem menuItem = new MenuItem(enumItem.toString());
+                    menuItem.setOnAction(
+                            e -> {
+                                this.setConvertFilter(enumItem);
+                            }
+                    );
+                    return menuItem;
+                }
+        ).collect(
+                Collectors.toList()
+        );
+
+        this.convertFilterSplitMenuButton.getItems().clear();
+        this.convertFilterSplitMenuButton.getItems().addAll(
+                menuItems
+        );
+
+    }
+
+    private void initConvertTools() {
+
+        this.initFormatSplitMenu();
+        this.initFilterSplitMenu();
 
         this.toggleConvertMode();
         this.toggleImageListOpacity();
 
         this.startConvertButton.setTooltip(
-                new Tooltip("Start to convert")
+                this.getTooltip("Start to convert")
         );
 
         this.setNodeVisibility(this.startConvertButton, false);
@@ -763,6 +814,107 @@ public class ImageListController {
     private void setConvertFormat(String format) {
         this.convertFormat = format;
         this.setNodeVisibility(this.startConvertButton, true);
+    }
+
+    private void setFilterButtonTextAndTooltip() {
+
+        this.convertFilterParamsDisplay.clear();
+
+        this.convertFilterParams.entrySet().forEach(
+                (entry) -> {
+
+                    this.convertFilterParamsDisplay.add(
+                            String.format(
+                                    "%s: %s",
+                                    entry.getKey(),
+                                    entry.getValue().toString()
+                            )
+                    );
+                }
+        );
+
+        StringJoiner stringJoiner = new StringJoiner("\n");
+
+        String displayOnButton = String.format(
+                "%s filter(s)",
+                this.convertFilterParamsDisplay.size()
+        );
+
+        this.convertFilterSplitMenuButton.setText(displayOnButton);
+
+        this.convertFilterParamsDisplay.forEach(
+                (item) -> {
+                    stringJoiner.add(item);
+                }
+        );
+        this.convertFilterSplitMenuButton.setTooltip(
+                getTooltip(
+                        stringJoiner.toString()
+                )
+        );
+    }
+
+    private void setConvertFilter(ImageConvertingFilterEnum filterOption) {
+        switch (filterOption) {
+
+            case ClearAll: {
+                this.convertFilterParams.clear();
+                this.convertFilterParamsDisplay.clear();
+                this.convertFilterSplitMenuButton.setText("Select Filter (optional)");
+
+            }
+            break;
+
+            default: {
+
+                if (filterOption.isAccept1Param) {
+                    promptForInput(filterOption.hint, filterOption.displayValue, filterOption.defaultParamValue, (enteredValue) -> {
+                        this.actionOnFilterSelect(
+                                filterOption,
+                                String.format(
+                                        filterOption.value,
+                                        enteredValue
+                                )
+                        );
+                    });
+                } else {
+                    this.actionOnFilterSelect(filterOption, filterOption.value);
+
+                }
+
+
+            }
+            break;
+
+        }
+
+        this.setFilterButtonTextAndTooltip();
+
+    }
+
+    private void actionOnFilterSelect(ImageConvertingFilterEnum filterOption, String params) {
+        if (this.convertFilterParams.containsKey(filterOption.displayValue)) {
+            this.convertFilterParams.remove(filterOption.displayValue);
+            return;
+        }
+
+        this.convertFilterParams.put(
+                filterOption.displayValue,
+                new ArrayList<>(
+                        Arrays.asList(
+                                params.split(" ")
+                        )
+                )
+        );
+
+    }
+
+    private void promptForInput(String hint, String prefixLabel, String defaultValue, Consumer<String> consumer) {
+        TextInputDialog textInputDialog = new TextInputDialog(defaultValue);
+        textInputDialog.setHeaderText(hint);
+        textInputDialog.setTitle("Provide value");
+        textInputDialog.setContentText(prefixLabel);
+        textInputDialog.showAndWait().ifPresent(consumer);
     }
 
     private void prepareProgressBar() {
