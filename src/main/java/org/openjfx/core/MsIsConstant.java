@@ -39,6 +39,7 @@ public class MsIsConstant {
         public String toString() {
             return App.class.getResource(this.path).toString();
         }
+
         public URL toURL() {
             return App.class.getResource(this.path);
         }
@@ -69,6 +70,89 @@ public class MsIsConstant {
 
     }
 
+    public enum ImageConvertingFilterEnum {
+        MonoColor(
+                "Grey Scale",
+                "-grayscale average",
+                false,
+                "",
+                "Grey Scale in black and white"
+        ),
+        Resize(
+                "Resize",
+                "-resize %s",
+                true,
+                "75%",
+                "New dimension scale in percentage"
+        ),
+        Blur(
+                "Blur",
+                "-blur %s",
+                true,
+                "20x5",
+                "Simple Gaussian blur with {radius}x{sigma}"
+        ),
+        Contrast(
+                "Add Contrast",
+                "-contrast",
+                false,
+                "",
+                "Add contract to the photo"
+        ),
+        Rotate(
+                "Rotate",
+                "-rotate %s",
+                true,
+                "90",
+                "Rotate the image by the giving degrees, say 90, -90."
+        ),
+        Custom(
+                "Custom params",
+                "%s",
+                true,
+                "",
+                "Enter custom parameters from Image magick https://imagemagick.org/script/convert.php"
+        ),
+        ClearAll(
+                "Clear filters",
+                "ClearAll",
+                false,
+                "",
+                "Clear all added filters"
+        );
+
+        public final String displayValue;
+        public final String value;
+        public final boolean isAccept1Param;
+        public final String defaultParamValue;
+        public final String hint;
+
+        ImageConvertingFilterEnum(
+                String displayValue,
+                String value,
+                boolean isAccept1Param,
+                String defaultParamValue,
+                String hint
+
+        ) {
+            this.displayValue = displayValue;
+            this.value = value;
+            this.isAccept1Param = isAccept1Param;
+            this.defaultParamValue = defaultParamValue;
+            this.hint = hint;
+        }
+
+        @Override
+        public String toString() {
+            return this.displayValue;
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+
+
+    }
 
 
 }

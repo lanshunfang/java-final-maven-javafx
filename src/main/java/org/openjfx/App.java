@@ -84,8 +84,13 @@ public class App extends Application {
         FileChooser.ExtensionFilter fileExtensions = new FileChooser.ExtensionFilter(
                 "Images",
                 "*.jpg",
+                "*.JPG",
+                "*.jpeg",
+                "*.JPEG",
                 "*.png",
-                "*.gif"
+                "*.PNG",
+                "*.gif",
+                "*.GIF"
         );
         fileChooser.getExtensionFilters().add(fileExtensions);
 
