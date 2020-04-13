@@ -1,5 +1,8 @@
 package org.openjfx.core;
 
+import com.drew.imaging.ImageProcessingException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -17,7 +20,13 @@ public class Channel implements IChannel {
         ArrayList<LambdaInvoke> listeners = this.listeners.get(subjectEnum);
 
         if (listeners != null) {
-            listeners.forEach(callback -> callback.invoke(data));
+            listeners.forEach(callback -> {
+                try {
+                    callback.invoke(data);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
         }
 
     }
@@ -30,7 +39,11 @@ public class Channel implements IChannel {
         if (!isDiscardHistoryMessage) {
             Object lastMessageData = this.lastMessage.get(subjectEnum);
             if (lastMessageData != null) {
-                callback.invoke(lastMessageData);
+                try {
+                    callback.invoke(lastMessageData);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 

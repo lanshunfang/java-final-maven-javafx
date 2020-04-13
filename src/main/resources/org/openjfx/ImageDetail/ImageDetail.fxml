@@ -1,31 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Button?>
-
 <?import java.net.URL?>
 <?import javafx.scene.layout.HBox?>
-
 <?import javafx.scene.layout.VBox?>
-
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<VBox styleClass="root, center-align" minHeight="300.0" minWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageDetailController">
+
+<VBox minHeight="300.0" minWidth="400.0" styleClass="root, center-align" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openjfx.ImageDetailController">
     <children>
-        <HBox fx:id="imageViewContainer">
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <GridPane prefHeight="100.0" prefWidth="412.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="384.0" minWidth="10.0" prefWidth="185.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="222.0" minWidth="5.0" prefWidth="210.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Label fx:id="longitude" text="Longitude" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label fx:id="latitude" text="Latitude" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <Label fx:id="width" text="Width" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <Label fx:id="height" text="Height" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Label fx:id="cameraMakeAndModel" text="Camera Make and Model" GridPane.columnIndex="1" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Camera Make and Model" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Longitude" GridPane.rowIndex="1" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Latitude" GridPane.rowIndex="2" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Width" GridPane.rowIndex="3" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Height" GridPane.rowIndex="4" />
+               </children>
+            </GridPane>
+         </children>
+      </HBox>
+        <HBox fx:id="imageViewContainer" prefHeight="100.0" prefWidth="378.0">
             <children>
                 <ImageView fitHeight="100.0" fitWidth="100.0">
                     <image>
                         <Image url="@../images/placeholder.png" />
                     </image>
+               <viewport>
+                  <Rectangle2D />
+               </viewport>
                 </ImageView>
+            <HBox prefHeight="100.0" prefWidth="200.0" />
+            <GridPane prefHeight="100.0" prefWidth="412.0">
+               <children>
+                  <Label fx:id="longitude1" text="Longitude" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label fx:id="latitude1" text="Latitude" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <Label fx:id="width1" text="Width" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <Label fx:id="height1" text="Height" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Label fx:id="cameraMakeAndModel1" text="Camera Make and Model" GridPane.columnIndex="1" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Camera Make and Model" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Longitude" GridPane.rowIndex="1" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Latitude" GridPane.rowIndex="2" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Width" GridPane.rowIndex="3" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Height" GridPane.rowIndex="4" />
+               </children>
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="384.0" minWidth="10.0" prefWidth="185.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="222.0" minWidth="5.0" prefWidth="210.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+            </GridPane>
             </children>
+         <VBox.margin>
+            <Insets bottom="10.0" top="10.0" />
+         </VBox.margin>
         </HBox>
-        <Button text="Back" onAction="#switchToList" />
+        <Button onAction="#switchToList" text="Back" />
     </children>
 
     <stylesheets>
-        <URL value="@../styles.css"/>
-        <URL value="@ImageDetail.css"/>
+        <URL value="@../styles.css" />
+        <URL value="@ImageDetail.css" />
     </stylesheets>
 </VBox>
