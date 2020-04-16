@@ -110,7 +110,7 @@ public class ImageUtil {
 
         Task javafxTask = new Task<Void>() {
             @Override
-            public Void call() {
+            public Void call() {//加载照片的多线程
 
                 try {
 
@@ -224,10 +224,19 @@ public class ImageUtil {
         return wr;
     }
 
-    static Image getImageFromFile(File file) {
+    public static Image getImageFromFile(File file) {
         try {
 //            return getImageFromBufferedImage(ImageIO.read(file));
             return new Image(file.toURI().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static Image getImageFromFile(File file, int maxWidth) {
+        try {
+//            return getImageFromBufferedImage(ImageIO.read(file));
+            return new Image(file.toURI().toString(), maxWidth, 0,true, true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -295,20 +304,20 @@ public class ImageUtil {
 
                     double imageLength = imageWrapperList.size();
 
-                    isAllDone = getForkJoinPool().submit(
+                    isAllDone = getForkJoinPool().submit(//getForkJoinPool()流式处理转化为并行处理，CPU多线程操作，操作器相当于thread pool，提交任务(这句话)会被pool fork
                             () -> imageWrapperList
                                     .stream()
-                                    .parallel()
-                                    .filter((imageWrapper) -> fileSelector.test(imageWrapper))
+                                    .parallel()//并发状态
+                                    .filter((imageWrapper) -> fileSelector.test(imageWrapper))//判断图片是否被处理（有没有删除。。。）
 
-                                    .map(
+                                    .map(//数据转换并作各种操作，调用image magick的地方
                                             imageWrapper -> {
                                                 ConvertResult result = new ConvertResult(imageWrapper, false);
 
 
                                                 try {
 
-                                                    convert(
+                                                    convert(//调用image magick
                                                             imageWrapper.file,
                                                             outputDirectory,
                                                             imageConvertFormat,
@@ -325,7 +334,7 @@ public class ImageUtil {
                                             }
                                     )
 
-                                    .peek(result -> {
+                                    .peek(result -> {//更新流的进度，告诉main thread已经完成进度
 
                                         counter.add(result);
                                         result.progress = (double) counter.size() / imageLength;
@@ -334,7 +343,7 @@ public class ImageUtil {
 
                                     })
 
-                                    .allMatch(convertResult -> convertResult.isDone)
+                                    .allMatch(convertResult -> convertResult.isDone)//有没有转换照片失败的，统计结果
                     ).get();
 
                 } catch (Exception e) {
