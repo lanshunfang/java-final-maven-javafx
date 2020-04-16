@@ -33,30 +33,7 @@
                 <Text text="Image Processor" styleClass="h2"/>
                 <Label
                         styleClass="gap-margin" text=" "></Label>
-                <HBox
-
-                        fx:id="globalNotificationContainer">
-                    <TextFlow
-                            HBox.hgrow="ALWAYS"
-                            textAlignment="CENTER"
-                            fx:id="globalNotificationTextFlowAlert">
-                    </TextFlow>
-
-                    <Label
-                            HBox.hgrow="NEVER"
-                            styleClass="gap-margin" text=" "></Label>
-                    <ImageView
-                            HBox.hgrow="NEVER"
-                            fitHeight="20.0"
-                            fitWidth="20.0"
-
-                            onMouseClicked="#onCloseNotificationAction"
-                    >
-                        <image>
-                            <Image fx:id="closeImg" url="@../images/close.png"/>
-                        </image>
-                    </ImageView>
-                </HBox>
+                <fx:include fx:id="notification" source="../Notification/Notification.fxml" />
 
                 <Label
                         styleClass="gap-margin" text=" "></Label>
@@ -99,7 +76,7 @@
 
                     <Label text=" "></Label>
 
-                    <fx:include fx:id="imageListHandler" source="../ImageListHandlers/ImageListHandlers.fxml" />
+                    <fx:include fx:id="imageListHandlers" source="../ImageListHandlers/ImageListHandlers.fxml" />
 
                     <Label styleClass="gap-margin" text=" "></Label>
 

@@ -20,8 +20,7 @@ public class ImageListHandlersController {
     private Channel messaging = Messaging.getInstance();
 
     ImageState imageState;
-    Notification notification;
-
+    private NotificationController notification;
 
     @FXML
     public HBox defaultActionContainer;
@@ -58,13 +57,16 @@ public class ImageListHandlersController {
 
     }
 
+    public void setNotification(NotificationController notificationController) {
+        this.notification = notificationController;
+    }
+
     private void initMessagingListen() {
         listenEditConvertStateUpdate();
     }
 
     private void initCommunicationInstance() {
         imageState = ImageState.getInstance();
-        notification = Notification.getInstance();
     }
 
     private void setMaxImageFiles() {

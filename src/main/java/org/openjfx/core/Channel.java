@@ -8,6 +8,9 @@ import java.util.HashMap;
 
 public class Channel implements IChannel {
 
+    HashMap<MessageObject.SubjectEnum, Object> lastMessage = new HashMap<>();
+    HashMap<MessageObject.SubjectEnum, ArrayList<LambdaInvoke>> listeners = new HashMap<>();
+
     public static class ProgressData {
         public final double percentage;
         public final String prefix;
@@ -77,10 +80,6 @@ public class Channel implements IChannel {
 
 
 interface IChannel {
-
-
-    HashMap<MessageObject.SubjectEnum, Object> lastMessage = new HashMap<>();
-    HashMap<MessageObject.SubjectEnum, ArrayList<LambdaInvoke>> listeners = new HashMap<>();
 
     void postMessage(MessageObject.SubjectEnum subjectEnum, Object data);
 

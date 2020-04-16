@@ -1,15 +1,9 @@
 package org.openjfx;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javafx.animation.FadeTransition;
-import javafx.application.Platform;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -18,7 +12,6 @@ import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
@@ -30,16 +23,22 @@ import org.openjfx.core.MsIsConstant.*;
 public class ImageListController {
 
     ImageState imageState;
-    Notification notification;
+
+    @FXML
+    public VBox notification;
+    @FXML
+    public NotificationController notificationController;
+
+    @FXML
+    public VBox imageListHandlers;
+    @FXML
+    public ImageListHandlersController imageListHandlersController;
 
     @FXML
     public BorderPane borderPaneContainer;
     @FXML
     public GridPane gridPane;
-    @FXML
-    public HBox globalNotificationContainer;
-    @FXML
-    public TextFlow globalNotificationTextFlowAlert;
+
     @FXML
     public VBox centerWrapper;
     @FXML
@@ -62,13 +61,17 @@ public class ImageListController {
         this.initMessagingListen();
 
         this.initLayout();
-        this.showWelcome();
+        this.setNotificationToChildren();
 
     }
 
     @FXML
     public void openProjectUrl() {
         App.openUrl(this.projectUrl.getText());
+    }
+
+    private void setNotificationToChildren() {
+        this.imageListHandlersController.setNotification(this.notificationController);
     }
 
     private void initMessagingListen() {
@@ -79,10 +82,6 @@ public class ImageListController {
 
     private void initCommunicationInstance() {
         imageState = ImageState.getInstance();
-        notification = Notification.getInstance(
-                globalNotificationContainer,
-                globalNotificationTextFlowAlert
-        );
     }
 
     private void listenImageLoaded() {
@@ -122,11 +121,6 @@ public class ImageListController {
             StackPane.setAlignment(formatLabel, Pos.TOP_RIGHT);
         }
 
-    }
-
-    @FXML
-    public void onCloseNotificationAction() {
-        messaging.postMessage(MessageObject.SubjectEnum.OnCloseNotification, true);
     }
 
     private Node getImageFormatTag(File file) {
@@ -325,10 +319,6 @@ public class ImageListController {
         BorderPane.setAlignment(this.copyright, Pos.CENTER);
 
 
-    }
-
-    private void showWelcome() {
-        notification.notifyInfo("Pick an image(s) to start");
     }
 
     private void toggleImageListOpacity() {

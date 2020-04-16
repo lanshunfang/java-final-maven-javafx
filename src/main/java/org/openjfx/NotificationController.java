@@ -1,6 +1,7 @@
-package org.openjfx.core;
+package org.openjfx;
 
 import javafx.application.Platform;
+import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -10,63 +11,42 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import org.openjfx.App;
+import org.openjfx.core.*;
 
 import java.io.File;
 
-public class Notification {
+public class NotificationController {
+
+    @FXML
+    public HBox globalNotificationContainer;
+    @FXML
+    public TextFlow globalNotificationTextFlowAlert;
 
     private Channel messaging = Messaging.getInstance();
-    ImageState imageState;
-
-    static Notification inst;
-    HBox globalNotificationContainer;
-    TextFlow globalNotificationTextFlowAlert;
+    ImageState imageState = ImageState.getInstance();
 
     public ProgressBar progressBar;
     public Text progressText;
 
-    public Notification(
-            HBox globalNotificationContainer,
-            TextFlow globalNotificationTextFlowAlert
-    ) {
-        this.globalNotificationContainer = globalNotificationContainer;
-        this.globalNotificationTextFlowAlert = globalNotificationTextFlowAlert;
-
-        imageState = ImageState.getInstance();
+    @FXML
+    public void initialize() {
 
         this.initMessaging();
+        this.showWelcome();
     }
 
-    public static Notification getInstance(
-            HBox globalNotificationContainer,
-            TextFlow globalNotificationTextFlowAlert
-
-    ) {
-
-        if (inst == null) {
-            inst = new Notification(globalNotificationContainer, globalNotificationTextFlowAlert);
-        }
-
-        return inst;
-
+    @FXML
+    public void onCloseNotificationAction() {
+        messaging.postMessage(MessageObject.SubjectEnum.OnCloseNotification, true);
     }
 
-    public static Notification getInstance(
-
-    ) {
-
-        return inst;
-
+    private void showWelcome() {
+        this.notifyInfo("Pick an image(s) to start");
     }
 
     private void initMessaging() {
-        messaging.onMessage(MessageObject.SubjectEnum.ProgressUpdate, (loadResult) -> {
-            loadResult = (Channel.ProgressData) loadResult;
-            safeUpdateProgress(((Channel.ProgressData) loadResult).percentage, ((Channel.ProgressData) loadResult).prefix);
 
-        });
-
+        this.listenOnProgressUpdate();
         this.listenCloseNotificationAction();
         this.listenImageConvertingMessage();
     }
@@ -89,11 +69,6 @@ public class Notification {
         }
         Text alertMsg = new Text(message);
         this.notify(alertMsg, styleClasses);
-        this.globalNotificationContainer.getStyleClass().addAll(
-                styleClasses
-        );
-
-        this.toggleNotification(true);
 
     }
 
@@ -105,16 +80,15 @@ public class Notification {
 
         this.notify(node);
 
-        this.toggleNotification(true);
-
     }
 
     public void notify(Node node) {
 
+        this.toggleNotification(true);
+
         this.globalNotificationTextFlowAlert.getChildren().clear();
         this.globalNotificationTextFlowAlert.getChildren().addAll(node);
 
-        this.toggleNotification(true);
 
     }
 
@@ -123,7 +97,6 @@ public class Notification {
         this.notify(node, "alert", "alert-info");
 
     }
-
 
     public void notifyWarn(String message) {
         this.notify(message, "alert", "alert-warn");
@@ -182,7 +155,15 @@ public class Notification {
         this.notifyInfo(vBox);
     }
 
-    public void safeUpdateProgress(double progress, String prefix) {
+    private void listenOnProgressUpdate() {
+        messaging.onMessage(MessageObject.SubjectEnum.ProgressUpdate, (loadResult) -> {
+            loadResult = (Channel.ProgressData) loadResult;
+            safeUpdateProgress(((Channel.ProgressData) loadResult).percentage, ((Channel.ProgressData) loadResult).prefix);
+
+        });
+    }
+
+    private void safeUpdateProgress(double progress, String prefix) {
         Platform.runLater(() -> {
             double displayProgress = progress < 0.03 ? 0.03 : progress;
             this.setProgress(displayProgress, prefix);
