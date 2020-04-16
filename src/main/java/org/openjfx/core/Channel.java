@@ -8,6 +8,18 @@ import java.util.HashMap;
 
 public class Channel implements IChannel {
 
+    HashMap<MessageObject.SubjectEnum, Object> lastMessage = new HashMap<>();
+    HashMap<MessageObject.SubjectEnum, ArrayList<LambdaInvoke>> listeners = new HashMap<>();
+
+    public static class ProgressData {
+        public final double percentage;
+        public final String prefix;
+
+        public ProgressData(double percentage, String prefix) {
+            this.prefix = prefix;
+            this.percentage = percentage;
+        }
+    }
 
     @Override
     public void postMessage(MessageObject.SubjectEnum subjectEnum, Object data) {
@@ -60,7 +72,7 @@ public class Channel implements IChannel {
     }
 
     public Unsub onMessage(MessageObject.SubjectEnum subjectEnum, LambdaInvoke callback) {
-       return onMessage(subjectEnum, callback, false);
+        return onMessage(subjectEnum, callback, false);
 
     }
 
@@ -68,10 +80,6 @@ public class Channel implements IChannel {
 
 
 interface IChannel {
-
-
-    HashMap<MessageObject.SubjectEnum, Object> lastMessage = new HashMap<>();
-    HashMap<MessageObject.SubjectEnum, ArrayList<LambdaInvoke>> listeners = new HashMap<>();
 
     void postMessage(MessageObject.SubjectEnum subjectEnum, Object data);
 

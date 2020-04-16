@@ -1,14 +1,17 @@
 package org.openjfx.core;
 
 import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 
-//import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -87,6 +90,9 @@ public class ImageUtil {
 
     public static Image getDefaultImage() {
         return new Image(MsIsConstant.PathEnum.ImagePlaceholder.toString());
+    }
+    public static ImageView getDefaultImageView() {
+        return getImageViewByImage(getDefaultImage(), "", 100, 100);
     }
 
     public static Image getLoadingSpinner() {
@@ -460,6 +466,36 @@ public class ImageUtil {
 //        }
 
 
+    }
+
+    public static List<File> filterValidImageFiles(List<File> files) {
+
+        return files.stream().filter(file -> {
+
+            try {
+                String mimetype = Files.probeContentType(file.toPath());
+
+                if (mimetype != null && mimetype.split("/")[0].equals("image")) {
+                    return true;
+                }
+                return false;
+            } catch (Exception e) {
+                return false;
+            }
+
+        }).collect(Collectors.toList());
+
+    }
+
+    public static void setNodeVisibility(Node node, boolean isShow) {
+        node.setVisible(isShow);
+        node.setManaged(isShow);
+    }
+
+    public static Tooltip getTooltip(String tooltip) {
+        Tooltip tooltipE = new Tooltip(tooltip);
+        tooltipE.getStyleClass().addAll("tooltip-info");
+        return tooltipE;
     }
 
 }
