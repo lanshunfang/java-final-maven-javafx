@@ -24,6 +24,12 @@ public class ImageListHandlersController {
 
     @FXML
     public HBox defaultActionContainer;
+
+    @FXML
+    Button clearAllButton;
+    @FXML
+    Button pickButton;
+
     @FXML
     public HBox editItemContainer;
     @FXML
@@ -43,8 +49,6 @@ public class ImageListHandlersController {
     @FXML
     public SplitMenuButton convertFilterSplitMenuButton;
 
-    @FXML
-    Button pickButton;
 
     @FXML
     public void initialize() {
@@ -52,9 +56,18 @@ public class ImageListHandlersController {
         this.initMessagingListen();
 
         this.toggleEditItemWrapper();
+        this.updateClearAllButtonState();
         this.setMaxImageFiles();
         this.initConvertTools();
 
+    }
+
+    private void updateClearAllButtonState() {
+        if (imageState.imageFileList.size() == 0) {
+            ImageUtil.setNodeVisibility(this.clearAllButton, false);
+        } else {
+            ImageUtil.setNodeVisibility(this.clearAllButton, true);
+        }
     }
 
     public void setNotification(NotificationController notificationController) {
@@ -73,6 +86,18 @@ public class ImageListHandlersController {
         this.pickButton.setTooltip(
                 ImageUtil.getTooltip("Maximum images: " + imageState.maxImageFiles)
         );
+    }
+
+    @FXML
+    void onClearImageAction() {
+        imageState.imageFileList.clear();
+        imageState.fileImageContainerHashMap.clear();
+        imageState.imageWrapperList.clear();
+
+        messaging.postMessage(SubjectEnum.OnImageFileListCleared, true);
+
+        this.onImageFileListChanged();
+
     }
 
     @FXML
@@ -100,6 +125,11 @@ public class ImageListHandlersController {
                 imageWrapper -> !validImageFiles.contains(imageWrapper.file)
         ).collect(Collectors.toCollection(ArrayList::new));
 
+        this.onImageFileListChanged();
+
+    }
+
+    private void onImageFileListChanged() {
         if (imageState.imageFileList.size() > imageState.maxImageFiles) {
             notification.notifyInfo("Only allow 50 images. Auto clear " + (imageState.imageFileList.size() - imageState.maxImageFiles) + " images");
             imageState.imageFileList.subList(0, imageState.maxImageFiles).clear();
@@ -107,7 +137,9 @@ public class ImageListHandlersController {
             notification.notifyInfo(String.format("Loading %s image(s)", imageState.imageWrapperList.size()));
         }
 
-        messaging.postMessage(SubjectEnum.OnPickImages, true);
+        messaging.postMessage(SubjectEnum.OnImageFileListChanged, true);
+
+        this.updateClearAllButtonState();
 
         imageState.updateImageModel(
                 (imageWrapperList) -> {
@@ -120,7 +152,6 @@ public class ImageListHandlersController {
 
                 }
         );
-
     }
 
 

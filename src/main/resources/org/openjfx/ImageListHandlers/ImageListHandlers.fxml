@@ -17,6 +17,14 @@
 
             fx:id="defaultActionContainer">
         <Button
+                fx:id="clearAllButton"
+                styleClass="btn, btn-default"
+                onAction="#onClearImageAction" text="Clear All"/>
+
+        <Label
+                styleClass="gap-margin" text=" "></Label>
+
+        <Button
                 fx:id="pickButton"
                 styleClass="btn, btn-default"
                 onAction="#onPickImageAction" text="Pick image(s)"/>

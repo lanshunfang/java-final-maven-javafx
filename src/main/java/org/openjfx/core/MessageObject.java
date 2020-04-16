@@ -8,7 +8,8 @@ public interface MessageObject {
     enum SubjectEnum {
         ImageIdToShow,
         ImageConvertingInProgress,
-        OnPickImages,
+        OnImageFileListChanged,
+        OnImageFileListCleared,
         OnAnImageLoaded,
         ProgressUpdate,
         EditConvertStateUpdate,

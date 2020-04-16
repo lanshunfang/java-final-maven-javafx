@@ -77,6 +77,7 @@ public class ImageListController {
         listenOnPickImages();
         listenImageLoaded();
         listenEditConvertStateUpdate();
+        listenImageCleared();
     }
 
     private void initCommunicationInstance() {
@@ -86,6 +87,16 @@ public class ImageListController {
     private void listenImageLoaded() {
         messaging.onMessage(SubjectEnum.OnAnImageLoaded, (data) -> {
             showLoadedImageToContainer((ImageUtil.LoadResult)data);
+        });
+    }
+    private void listenImageCleared() {
+
+        messaging.onMessage(SubjectEnum.OnImageFileListCleared, (data) -> {
+            this.gridPane.getChildren().clear();
+            this.gridPane.getChildren().add(
+                    ImageUtil.getDefaultImageView()
+            );
+
         });
     }
 
@@ -229,7 +240,7 @@ public class ImageListController {
     }
 
     private void listenOnPickImages() {
-        messaging.onMessage(SubjectEnum.OnPickImages, (data) -> {
+        messaging.onMessage(SubjectEnum.OnImageFileListChanged, (data) -> {
             this.prepareImageLoadingContainerList();
         });
     }

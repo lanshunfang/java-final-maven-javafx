@@ -91,6 +91,9 @@ public class ImageUtil {
     public static Image getDefaultImage() {
         return new Image(MsIsConstant.PathEnum.ImagePlaceholder.toString());
     }
+    public static ImageView getDefaultImageView() {
+        return getImageViewByImage(getDefaultImage(), "", 100, 100);
+    }
 
     public static Image getLoadingSpinner() {
         try {
