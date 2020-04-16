@@ -1,7 +1,6 @@
 package org.openjfx;
 
 import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifIFD0Directory;
@@ -16,7 +15,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 
 //------------------------
 import com.drew.lang.GeoLocation;
@@ -60,21 +58,9 @@ public class ImageDetailController {
             this.imageViewContainer.getChildren().add(
                     ImageUtil.getImageViewByFile((File) file, "", 600, 400)
             );
-            Metadata metadata = null;
-            try {
-                metadata = ImageMetadataReader.readMetadata((File) file);
-            } catch (ImageProcessingException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Metadata metadata = ImageMetadataReader.readMetadata((File) file);
 
-            BufferedImage bimg = null;
-            try {
-                bimg = ImageIO.read((File) file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            BufferedImage bimg = ImageIO.read((File) file);
 
             int width = bimg.getWidth();
             int height = bimg.getHeight();
