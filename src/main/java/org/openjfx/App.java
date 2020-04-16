@@ -4,7 +4,6 @@ import java.awt.Desktop;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.DirectoryChooser;
@@ -37,13 +36,14 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML(ComponentEnum.ImageList), 800, 600);
 
+        Parent imageListScene = loadFXML(ComponentEnum.ImageList);
+        scene = new Scene(imageListScene, 800, 600);
 
         ScreenController screenController = new ScreenController(scene);
-        screenController.addScreen(ComponentEnum.ImageList.toString(), loadFXML(ComponentEnum.ImageList));
+        screenController.addScreen(ComponentEnum.ImageList.toString(), imageListScene);
         screenController.addScreen(ComponentEnum.ImageDetail.toString(), loadFXML(ComponentEnum.ImageDetail));
-        screenController.activate(ComponentEnum.ImageList.toString());
+//        screenController.activate(ComponentEnum.ImageList.toString());
 
         this.screenController = screenController;
 

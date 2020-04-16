@@ -84,7 +84,21 @@ public class ImageListHandlersController {
             return;
         }
 
-        imageState.imageFileList.addAll(ImageUtil.filterValidImageFiles(files));
+        List<File> validImageFiles = ImageUtil.filterValidImageFiles(files);
+
+        validImageFiles.forEach((file) -> {
+            if (imageState.imageFileList.contains(file)) {
+                imageState.imageFileList.remove(file);
+                imageState.fileImageContainerHashMap.remove(file);
+            }
+
+            imageState.imageFileList.add(file);
+
+        });
+
+        imageState.imageWrapperList = imageState.imageWrapperList.stream().filter(
+                imageWrapper -> !validImageFiles.contains(imageWrapper.file)
+        ).collect(Collectors.toCollection(ArrayList::new));
 
         if (imageState.imageFileList.size() > imageState.maxImageFiles) {
             notification.notifyInfo("Only allow 50 images. Auto clear " + (imageState.imageFileList.size() - imageState.maxImageFiles) + " images");

@@ -1,5 +1,7 @@
 package org.openjfx.core;
 
+import javafx.scene.layout.StackPane;
+
 import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
@@ -10,6 +12,8 @@ public class ImageState {
 
     public ArrayList<File> imageFileList = new ArrayList<>();
     public ArrayList<ImageUtil.ImageWrapper> imageWrapperList = new ArrayList<>();
+
+    public HashMap<File, StackPane> fileImageContainerHashMap = new HashMap<>();
 
     public int maxImageFiles = 50;
 

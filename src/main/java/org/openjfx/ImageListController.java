@@ -50,7 +50,6 @@ public class ImageListController {
     public Image imagePlaceholder;
 
 
-    public HashMap<File, StackPane> fileImageContainerHashMap = new HashMap<>();
 
     private Channel messaging = Messaging.getInstance();
 
@@ -93,7 +92,7 @@ public class ImageListController {
     private void showLoadedImageToContainer(ImageUtil.LoadResult loadResult) {
         ImageWrapper imageWrapper = loadResult.imageWrapper;
 
-        StackPane stackPane = this.fileImageContainerHashMap.get(imageWrapper.file);
+        StackPane stackPane = imageState.fileImageContainerHashMap.get(imageWrapper.file);
 
         Node deleteHandler = getDeleteHandler(imageWrapper);
 
@@ -203,10 +202,10 @@ public class ImageListController {
     }
 
     private void deletePhotoNode(ImageWrapper imageWrapper, Button deleteBtn) {
-        if (!this.fileImageContainerHashMap.containsKey(imageWrapper.file)) {
+        if (!imageState.fileImageContainerHashMap.containsKey(imageWrapper.file)) {
             System.out.println("[WARN] Photo is not found in hashmap");
         }
-        StackPane photoNode = this.fileImageContainerHashMap.get(imageWrapper.file);
+        StackPane photoNode = imageState.fileImageContainerHashMap.get(imageWrapper.file);
 
         photoNode.setOpacity(imageWrapper.isMarkedToDelete ? 0.2 : 1);
         deleteBtn.setText(imageWrapper.isMarkedToDelete ? "Un-delete" : "Remove");
@@ -245,7 +244,7 @@ public class ImageListController {
 
                 File currentFile = imageState.imageFileList.get(index);
 
-                if (fileImageContainerHashMap.containsKey(currentFile)) {
+                if (imageState.fileImageContainerHashMap.containsKey(currentFile)) {
                     continue;
                 }
 
@@ -285,7 +284,7 @@ public class ImageListController {
 
                 StackPane.setAlignment(vBox, Pos.CENTER);
 
-                fileImageContainerHashMap.put(currentFile, stackPane);
+                imageState.fileImageContainerHashMap.put(currentFile, stackPane);
                 gridPane.add(stackPane, columnIndex, rowIndex);
 
                 columnIndex++;
@@ -305,7 +304,7 @@ public class ImageListController {
     }
     private void renderEditConvertState() {
         this.toggleImageListOpacity();
-        Iterator iterator = this.fileImageContainerHashMap.entrySet().iterator();
+        Iterator iterator = imageState.fileImageContainerHashMap.entrySet().iterator();
 
         while (iterator.hasNext()) {
             this.updateDeleteHandlerVisibility((StackPane) ((Map.Entry) iterator.next()).getValue());
