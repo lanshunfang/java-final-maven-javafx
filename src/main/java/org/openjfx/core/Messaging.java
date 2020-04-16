@@ -1,8 +1,8 @@
 package org.openjfx.core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
+/**
+ * Message channel
+ */
 public class Messaging {
     private static Channel channel;
 

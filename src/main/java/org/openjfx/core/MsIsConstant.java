@@ -6,6 +6,7 @@ import java.net.URL;
 
 public class MsIsConstant {
 
+    // All components loaded into Scene
     public enum ComponentEnum {
         ImageList("ImageList"),
         ImageDetail("ImageDetail");
@@ -23,6 +24,9 @@ public class MsIsConstant {
 
     }
 
+    /**
+     * All paths we used
+     */
     public enum PathEnum {
         StyleCss("style.css"),
         ClosePng("images/close.png"),
@@ -45,6 +49,9 @@ public class MsIsConstant {
         }
     }
 
+    /**
+     * Image converting options
+     */
     public enum ImageConvertingFormatEnum {
         Jpg("JPG", "jpg"),
         Png("PNG", "png"),
@@ -70,6 +77,11 @@ public class MsIsConstant {
 
     }
 
+    /**
+     * Extensible ImageMagic filtering
+     *
+     * @link https://imagemagick.org/script/convert.php
+     */
     public enum ImageConvertingFilterEnum {
         MonoColor(
                 "Grey Scale",

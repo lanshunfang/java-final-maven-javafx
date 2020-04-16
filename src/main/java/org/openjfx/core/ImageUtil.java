@@ -5,11 +5,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
 
-
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
@@ -25,6 +21,9 @@ import javafx.concurrent.*;
 
 public class ImageUtil {
 
+    /**
+     * Wrap parallel converting artifact with progress
+     */
     public static class ConvertResult {
         public ImageWrapper imageWrapper;
         public boolean isDone;
@@ -37,6 +36,9 @@ public class ImageUtil {
         }
     }
 
+    /**
+     * Wrap parallel image loading result with progress
+     */
     public static class LoadResult {
         public ImageWrapper imageWrapper;
         public double progress = 0;
@@ -46,6 +48,14 @@ public class ImageUtil {
         }
     }
 
+    /**
+     * Generate ImageView by an image with styleClasses and width / height
+     * @param image
+     * @param cssClasses
+     * @param imageWidth
+     * @param imageHeight
+     * @return
+     */
     public static ImageView getImageViewByImage(Image image, String cssClasses, int imageWidth, int imageHeight) {
         ImageView imageView = new ImageView();
         Image defaultImage = getDefaultImage();
@@ -62,10 +72,16 @@ public class ImageUtil {
 
     }
 
-    public static ImageView getImageViewByFile(File file) {
-        return getImageViewByFile(file, "", 100, 100);
-    }
 
+    /**
+     * Generate ImageView by file with given spec
+     *
+     * @param file
+     * @param cssClasses
+     * @param imageWidth
+     * @param imageHeight
+     * @return
+     */
     public static ImageView getImageViewByFile(File file, String cssClasses, int imageWidth, int imageHeight) {
         Image image = getDefaultImage();
 
@@ -80,6 +96,14 @@ public class ImageUtil {
     }
 
 
+    /**
+     * Config Image view with spec
+     *
+     * @param imageView
+     * @param imageHeight
+     * @param imageWidth
+     * @return
+     */
     public static ImageView configImageView(ImageView imageView, int imageHeight, int imageWidth) {
         imageView.setPreserveRatio(true);
         imageView.setFitHeight(imageHeight);
@@ -88,25 +112,36 @@ public class ImageUtil {
         return imageView;
     }
 
+    /**
+     * Get default image placeholder
+     *
+     * @return
+     */
     public static Image getDefaultImage() {
         return new Image(MsIsConstant.PathEnum.ImagePlaceholder.toString());
     }
+
+    /**
+     * Wrap default image into ImageView
+     *
+     * @return
+     */
     public static ImageView getDefaultImageView() {
         return getImageViewByImage(getDefaultImage(), "", 100, 100);
     }
 
-    public static Image getLoadingSpinner() {
-        try {
-            FileInputStream inputstream = new FileInputStream(MsIsConstant.PathEnum.LoadingGif.toString());
-            return new Image(inputstream);
-        } catch (Exception e) {
-
-        }
-        return null;
-
-    }
-
-
+    /**
+     * Create images in parallel with progress support in UI
+     *
+     * - Any generated images would be shown in UI immediately
+     *
+     * @param imageFiles - All selected image files from file dialog
+     * @param cachedImageWrapperList - We need to update existed generated wrapper list
+     *                               to reduce computing and page blink
+     * @param consumerInProgress - Callback on progress with given generated images from file
+     * @param consumerDone - Call back when done
+     * @return
+     */
     public static Task updateImageListParallel(
             List<File> imageFiles,
             ArrayList<ImageWrapper> cachedImageWrapperList,
@@ -114,6 +149,7 @@ public class ImageUtil {
             Consumer<List<ImageWrapper>> consumerDone
     ) {
 
+        // run parallel task which will update main UI thread in JavaFX way
         Task javafxTask = new Task<Void>() {
             @Override
             public Void call() {
@@ -132,20 +168,10 @@ public class ImageUtil {
                                                 i -> {
                                                     File currentFile = imageFiles.get(i);
 
-//                                                    BufferedImage bufferedImage = null;
-//                                                    try {
-//                                                        bufferedImage = ImageIO.read(
-//                                                                currentFile
-//                                                        );
-//                                                    } catch (Exception e) {
-//                                                        e.printStackTrace();
-//                                                    }
-
                                                     ImageWrapper imageWrapper = new ImageWrapper(
                                                             i,
                                                             currentFile,
 
-                                                            null,
                                                             null
                                                     );
 
@@ -155,6 +181,7 @@ public class ImageUtil {
                                                 }
                                         )
 
+                                        // All generated images would be filtered out to reduce CPU computing
                                         .filter(
                                                 loadResult ->
                                                         !cachedImageWrapperList
@@ -169,16 +196,15 @@ public class ImageUtil {
 
                                         .peek(
                                                 loadResult -> {
-//
-//                                                    loadResult.imageWrapper.image = getImageFromBufferedImage(
-//                                                            loadResult.imageWrapper.bufferedImage
-//                                                    );
+
                                                     loadResult.imageWrapper.image = getImageThumbnailFromFile(
                                                             loadResult.imageWrapper.file
                                                     );
 
                                                 }
                                         )
+
+                                        // the place to report progress with the generated images
                                         .peek(result -> {
 
                                             counter.add(result);
@@ -196,6 +222,7 @@ public class ImageUtil {
 
                                         .collect(Collectors.toList());
 
+                                // Done call back
                                 consumerDone.accept(imageWrapperList);
                             }
                     );
@@ -207,6 +234,7 @@ public class ImageUtil {
             }
         };
 
+        // make the thread and make it in background to not stop main UI thread
         Thread convertingThread = new Thread(javafxTask);
 
         convertingThread.setDaemon(true);
@@ -216,23 +244,13 @@ public class ImageUtil {
 
     }
 
-    static Image getImageFromBufferedImage(BufferedImage bufferedImage) {
-        WritableImage wr = null;
-        if (bufferedImage != null) {
-            wr = new WritableImage(bufferedImage.getWidth(), bufferedImage.getHeight());
-            PixelWriter pw = wr.getPixelWriter();
-            for (int x = 0; x < bufferedImage.getWidth(); x++) {
-                for (int y = 0; y < bufferedImage.getHeight(); y++) {
-                    pw.setArgb(x, y, bufferedImage.getRGB(x, y));
-                }
-            }
-        }
-        return wr;
-    }
-
+    /**
+     * Generate image from file
+     * @param file
+     * @return
+     */
     static Image getImageFromFile(File file) {
         try {
-//            return getImageFromBufferedImage(ImageIO.read(file));
             return new Image(file.toURI().toString());
         } catch (Exception e) {
             e.printStackTrace();
@@ -240,9 +258,14 @@ public class ImageUtil {
         return null;
     }
 
+    /**
+     * Generate image thumbnail from given file
+     *
+     * @param file
+     * @return
+     */
     static Image getImageThumbnailFromFile(File file) {
         try {
-//            return getImageFromBufferedImage(ImageIO.read(file));
             return new Image(file.toURI().toString(), 100, 100, true, false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -250,34 +273,62 @@ public class ImageUtil {
         return null;
     }
 
+    /**
+     * Wrap a selected file with generated image, index, file
+     */
     public static class ImageWrapper {
+        // the index of its imageFileList order, used for sorting after parallel generating
+        // so that the gridPane could show it in expected order
         public int index;
         public File file;
-        public BufferedImage bufferedImage;
         public Image image;
 
+        // if set to true, the file is deleted
+        // We use this flag to offer user a chance to un delete a file and
+        // to reduce page blinking (gridPane children nodes count changes)
         public boolean isMarkedToDelete = false;
 
-        public ImageWrapper(int index, File file, BufferedImage bufferedImage, Image image) {
+        public ImageWrapper(int index, File file, Image image) {
             this.index = index;
-            this.bufferedImage = bufferedImage;
             this.image = image;
             this.file = file;
         }
 
     }
 
+    /**
+     * As we update UI while processing images, we need this to prevent children threads from updating main UI thread.
+     * @param consumer
+     */
     public static void safeJavaFxExecute(Consumer<Boolean> consumer) {
         Platform.runLater(() -> {
             consumer.accept(true);
         });
     }
 
+    /**
+     * Maintain an independent fork join pool so that the processing would not be hijacked by other job
+     * @return
+     */
     private static ForkJoinPool getForkJoinPool() {
         int cores = Runtime.getRuntime().availableProcessors();
         return new ForkJoinPool(cores > 1 ? cores : 2);
     }
 
+    /**
+     * Convert images with ImageMagick in parallel
+     *
+     * @param imageWrapperList - The image wrapper list generated
+     * @param outputDirectory - the download folder (to save files)
+     * @param imageConvertFormat - JPG? PNG? The selected file format
+     * @param imageConvertParams - The filters
+     * @param fileSelector - Offer stream selection;
+     *                     Say there is no need to convert the image
+     *                     when the image is marked as deletion or User click "Back" button.
+     * @param consumerInProgress - Progress report
+     * @param consumerDone - Completion call back
+     * @return
+     */
     public static Task convertParallel(
             ArrayList<ImageWrapper> imageWrapperList,
             File outputDirectory,
@@ -305,6 +356,7 @@ public class ImageUtil {
                             () -> imageWrapperList
                                     .stream()
                                     .parallel()
+                                    // apply file selector
                                     .filter((imageWrapper) -> fileSelector.test(imageWrapper))
 
                                     .map(
@@ -314,6 +366,7 @@ public class ImageUtil {
 
                                                 try {
 
+                                                    // call convert subroutine
                                                     convert(
                                                             imageWrapper.file,
                                                             outputDirectory,
@@ -321,6 +374,7 @@ public class ImageUtil {
                                                             imageConvertParams
                                                     );
 
+                                                    // keep the flag so that we could know if any stream fails (exits)
                                                     result.isDone = true;
 
                                                 } catch (Exception e) {
@@ -347,6 +401,7 @@ public class ImageUtil {
                     e.printStackTrace();
                 }
 
+                // if any stream fails, we pass it into completion callback
                 Stream.of(isAllDone).forEach(consumerDone);
 
                 return null;
@@ -363,6 +418,10 @@ public class ImageUtil {
         return javafxTask;
     }
 
+    /**
+     * Get time stamp with current time
+     * @return
+     */
     private static String getTimeStamp() {
 
         Date now = new Date();
@@ -374,6 +433,12 @@ public class ImageUtil {
 
     }
 
+    /**
+     * Create the output child folder with timestamp
+     * @param selectedOutputDirectory
+     * @param prefix
+     * @return
+     */
     public static File initOutputFolderWithTimestamp(File selectedOutputDirectory, String prefix) {
 
         String outputFolderPath = selectedOutputDirectory.getAbsolutePath() + File.separatorChar + prefix + getTimeStamp();
@@ -389,16 +454,19 @@ public class ImageUtil {
     }
 
     /**
-     * @param inputFile
-     * @param outputDirectory
-     * @param format
+     * Call ImageMagick to convert the image file
+     * @param inputFile - The image file to convert
+     * @param outputDirectory - The directory to save converted images
+     * @param format - The image format (e.g. JPG, PNG)
      * @param extraCommandLineParams - For filters, etc. e.g. -threshold 15% -type bilevel
+     *
      * @throws Exception
      */
     private static void convert(File inputFile, File outputDirectory, String format, HashMap<String, ArrayList<String>> extraCommandLineParams) throws Exception {
 
         String fileName = inputFile.getName().split("\\.")[0];
 
+        // generated file path / name
         StringBuilder outputFileStreamBuilder = new StringBuilder(outputDirectory.getAbsolutePath());
         outputFileStreamBuilder.append(File.separatorChar);
         outputFileStreamBuilder.append(fileName);
@@ -407,8 +475,6 @@ public class ImageUtil {
         outputFileStreamBuilder.append(format);
 
         String outputFile = outputFileStreamBuilder.toString();
-
-//        try {
 
         boolean isWindows = System.getProperty("os.name")
                 .toLowerCase().startsWith("windows");
@@ -432,7 +498,6 @@ public class ImageUtil {
         System.out.println("[INFO] Command line to execute");
         System.out.println(commandLine);
 
-
         try {
 
             Process process = Runtime.getRuntime()
@@ -449,16 +514,17 @@ public class ImageUtil {
             e.printStackTrace();
         }
 
-
-//        } catch (Exception e) {
-//
-//            e.printStackTrace();
-//
-//        }
-
-
     }
 
+    /**
+     * Check image file MIME type before show it into gridPane
+     *
+     * - Files with .jpg, .png extension names are not necessary images. So the file picker would not be sufficient
+     * - MIME check is necessary.
+     *
+     * @param files
+     * @return
+     */
     public static List<File> filterValidImageFiles(List<File> files) {
 
         return files.stream().filter(file -> {
@@ -478,11 +544,22 @@ public class ImageUtil {
 
     }
 
+    /**
+     * Show or hide a JavaFX node
+     *
+     * @param node
+     * @param isShow
+     */
     public static void setNodeVisibility(Node node, boolean isShow) {
         node.setVisible(isShow);
         node.setManaged(isShow);
     }
 
+    /**
+     * Get tooltip node by text
+     * @param tooltip
+     * @return
+     */
     public static Tooltip getTooltip(String tooltip) {
         Tooltip tooltipE = new Tooltip(tooltip);
         tooltipE.getStyleClass().addAll("tooltip-info");

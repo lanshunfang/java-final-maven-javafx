@@ -25,30 +25,45 @@ public class ImageListHandlersController {
     @FXML
     public HBox defaultActionContainer;
 
+    // when clicked, all images would be cleared from grid
     @FXML
     Button clearAllButton;
+
+    // pick images button
     @FXML
     Button pickButton;
 
+    // by default, the edit buttons would be hidden unless user click Convert or Edit
     @FXML
     public HBox editItemContainer;
+
+    // For now we only support Delete images on editing
     @FXML
     public Button editButton;
+
+    // Bring out convert buttons
     @FXML
     public Button convertButton;
 
     @FXML
     public HBox convertingWrapper;
     @FXML
+
+    // Go back to List view from Convert mode
     public Button goBackButton;
+
+    // while clicking, a download folder selection dialog would be open
+    // once select, the converting starts.
     @FXML
     public Button startConvertButton;
 
+    // select image format like JPG or PNG
     @FXML
     public SplitMenuButton convertFormatSplitMenuButton;
+
+    // ImageMagick filter selection
     @FXML
     public SplitMenuButton convertFilterSplitMenuButton;
-
 
     @FXML
     public void initialize() {
@@ -62,6 +77,9 @@ public class ImageListHandlersController {
 
     }
 
+    /**
+     * Update the visibility of clear button
+     */
     private void updateClearAllButtonState() {
         if (imageState.imageFileList.size() == 0) {
             ImageUtil.setNodeVisibility(this.clearAllButton, false);
@@ -70,24 +88,43 @@ public class ImageListHandlersController {
         }
     }
 
+    /**
+     * API for parent controller register NotificationController to this child controller
+     * @param notificationController
+     */
     public void setNotification(NotificationController notificationController) {
         this.notification = notificationController;
     }
 
+    /**
+     * Listeners from Messaging init here
+     */
     private void initMessagingListen() {
         listenEditConvertStateUpdate();
     }
 
+    /**
+     * Init inter component communication
+     */
     private void initCommunicationInstance() {
         imageState = ImageState.getInstance();
     }
 
+    /**
+     * Tell the pick button the max items allowed
+     */
     private void setMaxImageFiles() {
         this.pickButton.setTooltip(
                 ImageUtil.getTooltip("Maximum images: " + imageState.maxImageFiles)
         );
     }
 
+    /**
+     * Clear all image actions
+     *
+     * - Once clicked, all states with images would be cleared as well as the grid pane
+     * - Default image would be shown
+     */
     @FXML
     void onClearImageAction() {
         imageState.imageFileList.clear();
@@ -97,9 +134,15 @@ public class ImageListHandlersController {
         messaging.postMessage(SubjectEnum.OnImageFileListCleared, true);
 
         this.onImageFileListChanged();
-
     }
 
+    /**
+     * When pick images done, the image list would be updated.
+     *
+     * For existing images (files selected), their states would be cleared (say marked for deletion)
+     * if they are selected again
+     * @param event
+     */
     @FXML
     public void onPickImageAction(Event event) {
 
@@ -129,7 +172,12 @@ public class ImageListHandlersController {
 
     }
 
+    /**
+     * Call back when image file list changed, say added or cleared (clear all)
+     */
     private void onImageFileListChanged() {
+
+        // only allow 50 images, all remnant would be removed
         if (imageState.imageFileList.size() > imageState.maxImageFiles) {
             notification.notifyInfo("Only allow 50 images. Auto clear " + (imageState.imageFileList.size() - imageState.maxImageFiles) + " images");
             imageState.imageFileList.subList(0, imageState.maxImageFiles).clear();
@@ -155,6 +203,11 @@ public class ImageListHandlersController {
     }
 
 
+    /**
+     * Toggle editing mode
+     *
+     * @param event
+     */
     @FXML
     public void onEditImageListAction(Event event) {
         imageState.isEditing = !imageState.isEditing;
@@ -168,6 +221,10 @@ public class ImageListHandlersController {
     }
 
 
+    /**
+     * Toggle converting mode
+     * @param event
+     */
     @FXML
     public void onConvertImageListAction(Event event) {
         imageState.isConverting = !imageState.isConverting;
@@ -220,12 +277,23 @@ public class ImageListHandlersController {
         this.goBackToList();
     }
 
+    /**
+     * Switch back to image list from Editing mode
+     */
     private void goBackToList() {
         imageState.isConverting = false;
         imageState.isConvertingInProgress = false;
         this.toggleConvertingState();
     }
 
+    /**
+     * Require for user input
+     *
+     * @param hint - The help tips
+     * @param prefixLabel - The label of the input
+     * @param defaultValue - The default value in the input
+     * @param consumer - callback on done
+     */
     private void promptForInput(String hint, String prefixLabel, String defaultValue, Consumer<String> consumer) {
         TextInputDialog textInputDialog = new TextInputDialog(defaultValue);
         textInputDialog.setHeaderText(hint);
@@ -234,6 +302,9 @@ public class ImageListHandlersController {
         textInputDialog.showAndWait().ifPresent(consumer);
     }
 
+    /**
+     * Manage the converting button state
+     */
     private void toggleConvertingState() {
 
         this.startConvertButton.setText(imageState.isConvertingInProgress ? "Converting" : "Pick download directory");
@@ -245,6 +316,11 @@ public class ImageListHandlersController {
 
     }
 
+    /**
+     * Consume the filter metadata into UI behavior
+     *
+     * @param filterOption
+     */
     private void setConvertFilter(ImageConvertingFilterEnum filterOption) {
         switch (filterOption) {
 
@@ -284,6 +360,12 @@ public class ImageListHandlersController {
     }
 
 
+    /**
+     * Action on a filter param is selected
+     *
+     * @param filterOption
+     * @param params
+     */
     private void actionOnFilterSelect(ImageConvertingFilterEnum filterOption, String params) {
         if (imageState.convertFilterParams.containsKey(filterOption.displayValue)) {
             imageState.convertFilterParams.remove(filterOption.displayValue);
@@ -301,6 +383,9 @@ public class ImageListHandlersController {
 
     }
 
+    /**
+     * Update filter button when any filter is selected
+     */
     private void setFilterButtonTextAndTooltip() {
 
         imageState.convertFilterParamsDisplay.clear();
@@ -340,6 +425,9 @@ public class ImageListHandlersController {
     }
 
 
+    /**
+     * Popup format menu
+     */
     private void initFormatSplitMenu() {
         List<MenuItem> menuItems = Stream.of(ImageConvertingFormatEnum.values()).map(
                 enumItem -> {
@@ -365,6 +453,9 @@ public class ImageListHandlersController {
         );
     }
 
+    /**
+     * Pop up filter menu
+     */
     private void initFilterSplitMenu() {
         List<MenuItem> menuItems = Stream.of(ImageConvertingFilterEnum.values()).map(
                 enumItem -> {
@@ -418,6 +509,10 @@ public class ImageListHandlersController {
         this.startConvert();
     }
 
+    /**
+     * Start convert process
+     *
+     */
     private void startConvert() {
         File outputDirectory = App.openDirectoryChooser();
         if (outputDirectory == null) {
@@ -431,8 +526,6 @@ public class ImageListHandlersController {
         messaging.postMessage(MessageObject.SubjectEnum.ProgressUpdate,
                 new Channel.ProgressData(0.05, "Converting")
         );
-
-//        safeUpdateProgress(0.05, "Converting");
 
         ImageUtil.convertParallel(
 //                this.imageFileList,
@@ -453,6 +546,11 @@ public class ImageListHandlersController {
     }
 
 
+    /**
+     * Complete converting process
+     * @param outputDirectory
+     * @param isAllSuccess
+     */
     private void finishConvert(File outputDirectory, boolean isAllSuccess) {
 
         messaging.postMessage(MessageObject.SubjectEnum.ProgressUpdate,

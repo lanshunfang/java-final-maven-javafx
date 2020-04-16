@@ -15,6 +15,9 @@ import org.openjfx.core.*;
 
 import java.io.File;
 
+/**
+ * Handle all notifications
+ */
 public class NotificationController {
 
     @FXML
@@ -35,6 +38,9 @@ public class NotificationController {
         this.showWelcome();
     }
 
+    /**
+     * On close button clicked
+     */
     @FXML
     public void onCloseNotificationAction() {
         messaging.postMessage(MessageObject.SubjectEnum.OnCloseNotification, true);
@@ -55,6 +61,10 @@ public class NotificationController {
         ImageUtil.setNodeVisibility(this.globalNotificationContainer, isShow);
     }
 
+    /**
+     * Notification with info level
+     * @param message
+     */
     public void notifyInfo(String message) {
 
         this.notify(message, "alert", "alert-info");
@@ -72,6 +82,11 @@ public class NotificationController {
 
     }
 
+    /**
+     * Notification with style classes
+     * @param node
+     * @param styleClasses
+     */
     public void notify(Node node, String... styleClasses) {
 
         this.globalNotificationContainer.getStyleClass().addAll(
@@ -98,6 +113,10 @@ public class NotificationController {
 
     }
 
+    /**
+     * Notification with warn level
+     * @param message
+     */
     public void notifyWarn(String message) {
         this.notify(message, "alert", "alert-warn");
 
@@ -109,6 +128,12 @@ public class NotificationController {
     }
 
 
+    /**
+     * Progress bar management
+     *
+     * @param percentage
+     * @param prefix - The Label of the progress
+     */
     private void setProgress(double percentage, String prefix) {
         if (percentage >= 1) {
             this.progressBar = null;
@@ -140,6 +165,9 @@ public class NotificationController {
         });
     }
 
+    /**
+     * Generate progress bar
+     */
     private void prepareProgressBar() {
 
         VBox vBox = new VBox();
@@ -163,6 +191,11 @@ public class NotificationController {
         });
     }
 
+    /**
+     * Thread safe for UI update
+     * @param progress
+     * @param prefix
+     */
     private void safeUpdateProgress(double progress, String prefix) {
         Platform.runLater(() -> {
             double displayProgress = progress < 0.03 ? 0.03 : progress;
@@ -178,6 +211,11 @@ public class NotificationController {
     }
 
 
+    /**
+     * Show the result
+     * @param isAllSuccess - if false, some image converting failed
+     * @param outputDirectory - Image saving folder
+     */
     public void informResult(boolean isAllSuccess, File outputDirectory) {
 
         HBox generateContainerHBox = new HBox();
