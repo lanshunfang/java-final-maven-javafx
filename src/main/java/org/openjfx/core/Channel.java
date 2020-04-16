@@ -8,6 +8,15 @@ import java.util.HashMap;
 
 public class Channel implements IChannel {
 
+    public static class ProgressData {
+        public final double percentage;
+        public final String prefix;
+
+        public ProgressData(double percentage, String prefix) {
+            this.prefix = prefix;
+            this.percentage = percentage;
+        }
+    }
 
     @Override
     public void postMessage(MessageObject.SubjectEnum subjectEnum, Object data) {
@@ -60,7 +69,7 @@ public class Channel implements IChannel {
     }
 
     public Unsub onMessage(MessageObject.SubjectEnum subjectEnum, LambdaInvoke callback) {
-       return onMessage(subjectEnum, callback, false);
+        return onMessage(subjectEnum, callback, false);
 
     }
 

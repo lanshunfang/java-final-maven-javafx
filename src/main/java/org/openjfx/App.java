@@ -110,7 +110,7 @@ public class App extends Application {
 
     }
 
-    static void openFile(File file) {
+    public static void openFile(File file) {
         try {
             desktop.open(file);
 
@@ -121,14 +121,6 @@ public class App extends Application {
     static void openUrl(String url) {
         try {
             desktop.browse(new URL(url).toURI());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    static void sleep(int milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
         } catch (Exception e) {
             e.printStackTrace();
         }

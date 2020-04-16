@@ -99,69 +99,7 @@
 
                     <Label text=" "></Label>
 
-                    <HBox
-                            alignment="CENTER"
-                            styleClass="center-align"
-
-                            fx:id="defaultActionContainer">
-                        <Button
-                                fx:id="pickButton"
-                                styleClass="btn, btn-default"
-                                onAction="#onPickImageAction" text="Pick image(s)"/>
-
-                        <HBox
-                                fx:id="editItemContainer">
-                            <Label
-                                    styleClass="gap-margin" text=" "></Label>
-
-                            <Button styleClass="btn, btn-default"
-                                    fx:id="editButton"
-                                    onAction="#onEditImageListAction" text="Edit"/>
-
-                            <Label
-                                    styleClass="gap-margin" text=" "></Label>
-
-                            <Button styleClass="btn, btn-primary"
-                                    fx:id="convertButton"
-                                    onAction="#onConvertImageListAction" text="Convert"/>
-
-                        </HBox>
-
-                    </HBox>
-
-                    <HBox alignment="CENTER" fx:id="convertingWrapper">
-
-                        <Label
-                                styleClass="gap-margin" text=" "></Label>
-
-                        <Button styleClass="btn, btn-default"
-                                fx:id="goBackButton"
-                                onAction="#onGoBackImageListAction" text="Back"/>
-                        <Label
-                                styleClass="gap-margin" text=" "></Label>
-
-
-                        <SplitMenuButton
-                                styleClass="split-menu-btn,split-menu-btn-primary"
-                                fx:id="convertFormatSplitMenuButton"
-                                text="Select Format"
-                        >
-                        </SplitMenuButton>
-
-                        <SplitMenuButton
-                                styleClass="split-menu-btn,split-menu-btn-primary"
-                                fx:id="convertFilterSplitMenuButton"
-                                text="Select Filter (optional)"
-                        >
-                        </SplitMenuButton>
-                        <Label
-                                styleClass="gap-margin" text=" "></Label>
-
-                        <Button styleClass="btn, btn-primary"
-                                fx:id="startConvertButton"
-                                onAction="#onStartConvertImageListAction" text="Pick download directory"/>
-                    </HBox>
-
+                    <fx:include fx:id="imageListHandler" source="../ImageListHandlers/ImageListHandlers.fxml" />
 
                     <Label styleClass="gap-margin" text=" "></Label>
 
