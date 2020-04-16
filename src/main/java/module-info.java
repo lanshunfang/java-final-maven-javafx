@@ -1,4 +1,4 @@
-module hellofx {
+module javafinalmsis2020 {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.datatransfer;
