@@ -1,6 +1,7 @@
 package org.openjfx;
 
 import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import javafx.fxml.FXML;
@@ -12,6 +13,7 @@ import javafx.scene.layout.Priority;
 import org.openjfx.core.*;
 
 import java.io.File;
+import java.io.IOException;
 
 import com.drew.lang.GeoLocation;
 import com.drew.metadata.exif.GpsDirectory;
@@ -23,7 +25,9 @@ public class ImageDetailController {
 
     //@FXML annotation inject values defined in an FXML file into references in the controller class
     @FXML
-    //function to switch to the ImageList scene
+    /**
+     * switch to the ImageList scene
+     */
     public void switchToList() {
         Router.navigateToListView();
     }
@@ -42,12 +46,14 @@ public class ImageDetailController {
     public Label cameraMakeAndModel;
 
     @FXML
-    //use initialize function to get the metadata of the image file and set the metadata properties on the UI display
+    /**
+     * use initialize method to get the metadata of the image file and set the metadata properties on the UI display
+     */
     public void initialize() {
         //incoming file by the Channel
         messaging.onMessage(MessageObject.SubjectEnum.ImageIdToShow, (file) -> {
             //get image and restrict the maximum width to 400
-            Image image = ImageUtil.getImageFromFile((File) file, 400);
+            Image image = ImageUtil.getImageFromFile((File) file);
             //get imageView and set its width and height
             ImageView imageView = ImageUtil.getImageViewByImage(image, "", 400, 400);
             //clear the HBox imageViewContainer
@@ -59,7 +65,14 @@ public class ImageDetailController {
             //set an hgrow constraint on the imageView
             this.imageViewContainer.setHgrow(imageView, Priority.NEVER);
             //get metadata from the image file
-            Metadata metadata = ImageMetadataReader.readMetadata((File) file);
+            Metadata metadata = null;
+            try {
+                metadata = ImageMetadataReader.readMetadata((File) file);
+            } catch (ImageProcessingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             //get the width and height of the image
             double width = image.getWidth();
             double height = image.getHeight();

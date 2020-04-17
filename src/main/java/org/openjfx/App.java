@@ -10,17 +10,12 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import javafx.scene.layout.BorderPane;
-import org.kordamp.bootstrapfx.scene.layout.Panel;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
 import org.openjfx.core.MsIsConstant.*;
-
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * JavaFX App
@@ -40,30 +35,22 @@ public class App extends Application {
         Parent imageListScene = loadFXML(ComponentEnum.ImageList);
         scene = new Scene(imageListScene, 800, 600);
 
-        ScreenController screenController = new ScreenController(scene);
+        // init all screens
+        ScreenController screenController = new ScreenController(scene, stage);
         screenController.addScreen(ComponentEnum.ImageList.toString(), imageListScene);
         screenController.addScreen(ComponentEnum.ImageDetail.toString(), loadFXML(ComponentEnum.ImageDetail));
-//        screenController.activate(ComponentEnum.ImageList.toString());
 
         this.screenController = screenController;
 
         stage.setScene(scene);
+
+        // load bootstrap css
         scene.getStylesheets().add("org/kordamp/bootstrapfx/bootstrapfx.css");
         stage.sizeToScene();
         stage.show();
         this.stage = stage;
-
     }
 
-//    private void initContainer() {
-//        Panel panel = new Panel("This is the title");
-//        panel.getStyleClass().add("panel-primary");                            //(2)
-//        BorderPane content = new BorderPane();
-//        content.setPadding(new Insets(20));
-//                 //(2)
-//        content.setCenter(button);
-//        panel.setBody(content);
-//    }
 
     public static void setRoot(ComponentEnum componentEnum) {
         try {
@@ -75,12 +62,15 @@ public class App extends Application {
     }
 
 
+    /**
+     * Only allow pick jpg/png/gif image files
+     * @param fileChooser
+     */
     private static void configureFileChooser(
             final FileChooser fileChooser
     ) {
         fileChooser.setTitle("Choose Pictures");
 
-//        FileChooser.ExtensionFilter fileExtensions = new FileChooser.ExtensionFilter("Images","*.jpg", "*.png");
         FileChooser.ExtensionFilter fileExtensions = new FileChooser.ExtensionFilter(
                 "Images",
                 "*.jpg",
@@ -96,6 +86,10 @@ public class App extends Application {
 
     }
 
+    /**
+     * Open the file picker
+     * @return
+     */
     static List<File> openFileChooser() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
@@ -104,6 +98,11 @@ public class App extends Application {
         return fileChooser.showOpenMultipleDialog(stage);
 
     }
+
+    /**
+     * Open folder picker
+     * @return
+     */
     static File openDirectoryChooser() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         return directoryChooser.showDialog(stage);
@@ -118,6 +117,7 @@ public class App extends Application {
             e.printStackTrace();
         }
     }
+
     static void openUrl(String url) {
         try {
             desktop.browse(new URL(url).toURI());

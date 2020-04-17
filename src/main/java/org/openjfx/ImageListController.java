@@ -24,11 +24,13 @@ public class ImageListController {
 
     ImageState imageState;
 
+    // the notification controller from included fxml
     @FXML
     public VBox notification;
     @FXML
     public NotificationController notificationController;
 
+    // the buttons controller from included fxml
     @FXML
     public VBox imageListHandlers;
     @FXML
@@ -41,6 +43,7 @@ public class ImageListController {
 
     @FXML
     public VBox centerWrapper;
+
     @FXML
     public TextFlow copyright;
     @FXML
@@ -48,8 +51,6 @@ public class ImageListController {
 
     @FXML
     public Image imagePlaceholder;
-
-
 
     private Channel messaging = Messaging.getInstance();
 
@@ -69,6 +70,9 @@ public class ImageListController {
         App.openUrl(this.projectUrl.getText());
     }
 
+    /**
+     * Store notification controller reference to all children need it
+     */
     private void setNotificationToChildren() {
         this.imageListHandlersController.setNotification(this.notificationController);
     }
@@ -84,11 +88,18 @@ public class ImageListController {
         imageState = ImageState.getInstance();
     }
 
+    /**
+     * Listen on image loaded messaging
+     */
     private void listenImageLoaded() {
         messaging.onMessage(SubjectEnum.OnAnImageLoaded, (data) -> {
             showLoadedImageToContainer((ImageUtil.LoadResult)data);
         });
     }
+
+    /**
+     * Listen on clear images button
+     */
     private void listenImageCleared() {
 
         messaging.onMessage(SubjectEnum.OnImageFileListCleared, (data) -> {
@@ -100,6 +111,11 @@ public class ImageListController {
         });
     }
 
+    /**
+     * Any loaded images should be shown asap while loading a large chunk of files
+     *
+     * @param loadResult
+     */
     private void showLoadedImageToContainer(ImageUtil.LoadResult loadResult) {
         ImageWrapper imageWrapper = loadResult.imageWrapper;
 
@@ -109,6 +125,7 @@ public class ImageListController {
 
         ImageView imageView = ImageUtil.getImageViewByImage(imageWrapper.image, "", 100, 100);
 
+        // when click, we navigate to detail view
         this.navigateToDetailOnClick(imageView, imageWrapper.file);
 
         stackPane.getChildren().clear();
@@ -133,6 +150,12 @@ public class ImageListController {
 
     }
 
+    /**
+     * Get the format label (jpg/png) over the image
+     * - When in converting, we also show its target format
+     * @param file
+     * @return
+     */
     private Node getImageFormatTag(File file) {
         String fileName = file.getName();
         String ext = Optional.ofNullable(fileName)
@@ -144,7 +167,7 @@ public class ImageListController {
             return null;
         }
 
-        if (imageState.isConvertingInProgress) {
+        if (imageState.isConverting) {
             ext += " -> " + imageState.convertFormat;
         }
 
@@ -170,6 +193,10 @@ public class ImageListController {
         return label;
     }
 
+    /**
+     * Delete button only show in Edit mode
+     * @param stackPane
+     */
     private void updateDeleteHandlerVisibility(StackPane stackPane) {
 
         Node deleteButton = stackPane.lookup("." + StyleClass.NodeClassEnum.DeleteButton.toString());
@@ -177,6 +204,12 @@ public class ImageListController {
 
     }
 
+    /**
+     * Get delete button and bound event
+     *
+     * @param imageWrapper
+     * @return
+     */
     private Node getDeleteHandler(ImageWrapper imageWrapper) {
 
         Button removeBtn = new Button("Remove");
@@ -212,6 +245,12 @@ public class ImageListController {
         return removeBtn;
     }
 
+    /**
+     * Action on delete the photo
+     *
+     * @param imageWrapper
+     * @param deleteBtn
+     */
     private void deletePhotoNode(ImageWrapper imageWrapper, Button deleteBtn) {
         if (!imageState.fileImageContainerHashMap.containsKey(imageWrapper.file)) {
             System.out.println("[WARN] Photo is not found in hashmap");
@@ -223,6 +262,12 @@ public class ImageListController {
 
     }
 
+    /**
+     * Navigate to detail view
+     *
+     * @param imageView
+     * @param file
+     */
     private void navigateToDetailOnClick(ImageView imageView, File file) {
         imageView.addEventFilter(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
 
@@ -235,6 +280,11 @@ public class ImageListController {
         });
     }
 
+    /**
+     * Messaging the file to show for detail view
+     *
+     * @param file
+     */
     private void setFileToDetailsView(File file) {
         messaging.postMessage(SubjectEnum.ImageIdToShow, file);
     }
@@ -245,6 +295,10 @@ public class ImageListController {
         });
     }
 
+    /**
+     * Right after pick file, we generated a placeholder grid for loading all images
+     * - The grid will be update cell by cell on parallel image generation stream
+     */
     private void prepareImageLoadingContainerList() {
 
         int columnCount = 3;
@@ -280,12 +334,10 @@ public class ImageListController {
                         imageView
                 );
 
-                Node loadingImage = ImageUtil.getImageViewByImage(ImageUtil.getLoadingSpinner(), styleClasses.toString(), 100, 100);
                 Node formatLabel = new Label(String.format("%s", currentFile.getName()));
 
                 VBox vBox = new VBox();
                 vBox.getChildren().addAll(
-                        loadingImage,
                         formatLabel
                 );
 
@@ -308,11 +360,15 @@ public class ImageListController {
     }
 
 
+    /**
+     * Listen of edit mode and convert mode state changes
+     */
     private void listenEditConvertStateUpdate() {
         messaging.onMessage(SubjectEnum.EditConvertStateUpdate, (data) -> {
             renderEditConvertState();
         });
     }
+
     private void renderEditConvertState() {
         this.toggleImageListOpacity();
         Iterator iterator = imageState.fileImageContainerHashMap.entrySet().iterator();
@@ -322,6 +378,9 @@ public class ImageListController {
         }
     }
 
+    /**
+     * Set the layout dimension
+     */
     private void initLayout() {
         this.borderPaneContainer.prefHeight(500);
         this.borderPaneContainer.prefWidth(500);
@@ -331,6 +390,9 @@ public class ImageListController {
 
     }
 
+    /**
+     * When editing, the image list is semi-transparent
+     */
     private void toggleImageListOpacity() {
         double opacity = imageState.isConverting ? 0.5 : 1;
         FadeTransition ft = new FadeTransition(Duration.millis(500), this.gridPane);
