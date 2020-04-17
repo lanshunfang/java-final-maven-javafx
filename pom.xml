@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openjfx</groupId>
-    <artifactId>hellofx</artifactId>
+    <artifactId>javafinalmsis2020</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -76,9 +76,9 @@
                 <version>0.0.3</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
-                    <jlinkImageName>hellofx</jlinkImageName>
+                    <jlinkImageName>javafinalmsis2020</jlinkImageName>
                     <launcher>launcher</launcher>
-                    <mainClass>hellofx/org.openjfx.App</mainClass>
+                    <mainClass>javafinalmsis2020/org.openjfx.App</mainClass>
                 </configuration>
             </plugin>
         </plugins>
