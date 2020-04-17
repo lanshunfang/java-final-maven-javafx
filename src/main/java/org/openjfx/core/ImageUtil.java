@@ -249,7 +249,7 @@ public class ImageUtil {
      * @param file
      * @return
      */
-    static Image getImageFromFile(File file) {
+    public static Image getImageFromFile(File file) {
         try {
             return new Image(file.toURI().toString());
         } catch (Exception e) {
