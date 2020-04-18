@@ -53,27 +53,22 @@ public class MsIsConstant {
      * Image converting options
      */
     public enum ImageConvertingFormatEnum {
-        Jpg("JPG", "jpg"),
-        Png("PNG", "png"),
-        Gif("GIF", "gif");
+        Jpg("JPG", new String[]{"jpg", "jpeg"}),
+        Png("PNG", new String[]{"png"}),
+        Gif("GIF", new String[]{"gif"});
 
         public final String displayValue;
-        public final String formatValue;
+        public final String[] formatValues;
 
-        ImageConvertingFormatEnum(String displayValue, String formatValue) {
+        ImageConvertingFormatEnum(String displayValue, String[] formatValues) {
             this.displayValue = displayValue;
-            this.formatValue = formatValue;
+            this.formatValues = formatValues;
         }
 
         @Override
         public String toString() {
             return this.displayValue;
         }
-
-        public String getFormatValue() {
-            return this.formatValue;
-        }
-
 
     }
 

@@ -163,7 +163,6 @@ public class ImageUtil {
                     getForkJoinPool().submit(
                             () -> {
                                 List<ImageWrapper> imageWrapperList = IntStream.range(0, imageFiles.size())
-
                                         .mapToObj(
                                                 i -> {
                                                     File currentFile = imageFiles.get(i);
@@ -176,8 +175,6 @@ public class ImageUtil {
                                                     );
 
                                                     return new LoadResult(imageWrapper);
-
-
                                                 }
                                         )
 
@@ -191,9 +188,7 @@ public class ImageUtil {
                                                                                 -> theImageWrapper.file == loadResult.imageWrapper.file
                                                                 )
                                         )
-
                                         .parallel()
-
                                         .peek(
                                                 loadResult -> {
 
@@ -203,10 +198,8 @@ public class ImageUtil {
 
                                                 }
                                         )
-
                                         // the place to report progress with the generated images
                                         .peek(result -> {
-
                                             counter.add(result);
                                             result.progress = (double) counter.size() / imageLength;
 

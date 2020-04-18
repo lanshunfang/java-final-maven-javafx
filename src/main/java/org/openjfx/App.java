@@ -13,7 +13,12 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 import org.openjfx.core.MsIsConstant.*;
 
@@ -64,6 +69,7 @@ public class App extends Application {
 
     /**
      * Only allow pick jpg/png/gif image files
+     *
      * @param fileChooser
      */
     private static void configureFileChooser(
@@ -71,16 +77,30 @@ public class App extends Application {
     ) {
         fileChooser.setTitle("Choose Pictures");
 
+        String formats[] = Arrays.stream(ImageConvertingFormatEnum.values()).map(
+                (item) -> item.formatValues
+        )
+                .collect(
+                        Collector.of(
+                                () -> new ArrayList<String>(),
+                                (prev, currFormatValues) -> {
+
+                                    Stream.of(currFormatValues).forEach(
+                                            formatValue -> {
+                                                prev.add("*." + formatValue.toUpperCase());
+                                                prev.add("*." + formatValue.toLowerCase());
+                                            }
+                                    );
+
+                                },
+                                BinaryOperator.maxBy((a, b) -> 1),
+                                (result) -> result.toArray(new String[0])
+                        )
+                );
+
         FileChooser.ExtensionFilter fileExtensions = new FileChooser.ExtensionFilter(
                 "Images",
-                "*.jpg",
-                "*.JPG",
-                "*.jpeg",
-                "*.JPEG",
-                "*.png",
-                "*.PNG",
-                "*.gif",
-                "*.GIF"
+                formats
         );
         fileChooser.getExtensionFilters().add(fileExtensions);
 
@@ -88,6 +108,7 @@ public class App extends Application {
 
     /**
      * Open the file picker
+     *
      * @return
      */
     static List<File> openFileChooser() {
@@ -101,6 +122,7 @@ public class App extends Application {
 
     /**
      * Open folder picker
+     *
      * @return
      */
     static File openDirectoryChooser() {
