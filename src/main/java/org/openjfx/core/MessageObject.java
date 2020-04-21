@@ -10,6 +10,9 @@ public interface MessageObject {
         // the image ID selected to show in detail controller
         ImageIdToShow,
 
+        // The Geolocation found on the image to show in the geo map view
+        GeoMapToShow,
+
         // fired when the converting is in progress
         ImageConvertingInProgress,
 

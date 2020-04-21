@@ -538,17 +538,6 @@ public class ImageUtil {
     }
 
     /**
-     * Show or hide a JavaFX node
-     *
-     * @param node
-     * @param isShow
-     */
-    public static void setNodeVisibility(Node node, boolean isShow) {
-        node.setVisible(isShow);
-        node.setManaged(isShow);
-    }
-
-    /**
      * Get tooltip node by text
      * @param tooltip
      * @return

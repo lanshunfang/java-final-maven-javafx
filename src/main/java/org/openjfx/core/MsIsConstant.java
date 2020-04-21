@@ -6,10 +6,13 @@ import java.net.URL;
 
 public class MsIsConstant {
 
+    public static String NAPlaceholder = "N/A";
+
     // All components loaded into Scene
     public enum ComponentEnum {
         ImageList("ImageList"),
-        ImageDetail("ImageDetail");
+        ImageDetail("ImageDetail"),
+        ImageGeoMap("ImageGeoMap");
 
         public final String resourceName;
 

@@ -44,6 +44,7 @@ public class App extends Application {
         ScreenController screenController = new ScreenController(scene, stage);
         screenController.addScreen(ComponentEnum.ImageList.toString(), imageListScene);
         screenController.addScreen(ComponentEnum.ImageDetail.toString(), loadFXML(ComponentEnum.ImageDetail));
+        screenController.addScreen(ComponentEnum.ImageGeoMap.toString(), loadFXML(ComponentEnum.ImageGeoMap));
 
         this.screenController = screenController;
 

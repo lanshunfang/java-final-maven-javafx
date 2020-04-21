@@ -58,7 +58,7 @@ public class NotificationController {
     }
 
     public void toggleNotification(boolean isShow) {
-        ImageUtil.setNodeVisibility(this.globalNotificationContainer, isShow);
+        NodeUtil.setNodeVisibility(this.globalNotificationContainer, isShow);
     }
 
     /**
@@ -205,7 +205,7 @@ public class NotificationController {
 
     private void listenCloseNotificationAction() {
         messaging.onMessage(MessageObject.SubjectEnum.OnCloseNotification, (data) -> {
-            ImageUtil.setNodeVisibility(this.globalNotificationContainer, false);
+            NodeUtil.setNodeVisibility(this.globalNotificationContainer, false);
 
         });
     }

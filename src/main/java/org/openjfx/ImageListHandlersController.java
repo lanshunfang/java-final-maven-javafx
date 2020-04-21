@@ -82,9 +82,9 @@ public class ImageListHandlersController {
      */
     private void updateClearAllButtonState() {
         if (imageState.imageFileList.size() == 0) {
-            ImageUtil.setNodeVisibility(this.clearAllButton, false);
+            NodeUtil.setNodeVisibility(this.clearAllButton, false);
         } else {
-            ImageUtil.setNodeVisibility(this.clearAllButton, true);
+            NodeUtil.setNodeVisibility(this.clearAllButton, true);
         }
     }
 
@@ -241,13 +241,13 @@ public class ImageListHandlersController {
 
     private void toggleEditItemWrapper() {
         boolean isShow = imageState.imageFileList.size() > 0;
-        ImageUtil.setNodeVisibility(this.editItemContainer, isShow);
+        NodeUtil.setNodeVisibility(this.editItemContainer, isShow);
 
     }
 
 
     private void toggleConvertWrapper() {
-        ImageUtil.setNodeVisibility(this.convertingWrapper, imageState.isConverting);
+        NodeUtil.setNodeVisibility(this.convertingWrapper, imageState.isConverting);
     }
 
     private void listenEditConvertStateUpdate() {
@@ -259,7 +259,7 @@ public class ImageListHandlersController {
     }
 
     private void toggleDefaultActionContainer() {
-        ImageUtil.setNodeVisibility(this.defaultActionContainer, !imageState.isConverting);
+        NodeUtil.setNodeVisibility(this.defaultActionContainer, !imageState.isConverting);
 
     }
 
@@ -491,14 +491,14 @@ public class ImageListHandlersController {
                 ImageUtil.getTooltip("Start to convert")
         );
 
-        ImageUtil.setNodeVisibility(this.startConvertButton, false);
+        NodeUtil.setNodeVisibility(this.startConvertButton, false);
 
 
     }
 
     private void setConvertFormat(String format) {
         imageState.convertFormat = format;
-        ImageUtil.setNodeVisibility(this.startConvertButton, true);
+        NodeUtil.setNodeVisibility(this.startConvertButton, true);
     }
 
 

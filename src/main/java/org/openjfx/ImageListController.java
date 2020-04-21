@@ -200,7 +200,7 @@ public class ImageListController {
     private void updateDeleteHandlerVisibility(StackPane stackPane) {
 
         Node deleteButton = stackPane.lookup("." + StyleClass.NodeClassEnum.DeleteButton.toString());
-        ImageUtil.setNodeVisibility(deleteButton, imageState.isEditing);
+        NodeUtil.setNodeVisibility(deleteButton, imageState.isEditing);
 
     }
 
@@ -240,7 +240,7 @@ public class ImageListController {
             });
         }
 
-        ImageUtil.setNodeVisibility(removeBtn, false);
+        NodeUtil.setNodeVisibility(removeBtn, false);
 
         return removeBtn;
     }

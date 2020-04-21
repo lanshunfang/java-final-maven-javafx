@@ -9,6 +9,8 @@ module javafinalmsis2020 {
 
     requires jdk.jfr;
     requires metadata.extractor;
+    requires javafx.web;
+    requires jdk.jsobject;
 
     opens org.openjfx to javafx.fxml;
     exports org.openjfx;
