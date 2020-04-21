@@ -24,10 +24,8 @@ public class ImageDetailController {
     //receive messaging of Channel and pass the messaging to the ImageDetail scene
     private Channel messaging = Messaging.getInstance();
 
-
     @FXML
     Button gotoGeoMapBtn;
-
 
     //@FXML annotation inject values defined in an FXML file into references in the controller class
     @FXML

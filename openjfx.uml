@@ -3,27 +3,30 @@
   <ID>JAVA</ID>
   <OriginalElement>org.openjfx</OriginalElement>
   <nodes>
-    <node x="0.0" y="1358.0">org.openjfx.images</node>
-    <node x="1256.0" y="1064.0">org.openjfx.ImageList</node>
-    <node x="1219.0" y="0.0">org.openjfx.App</node>
-    <node x="175.0" y="1358.0">org.openjfx.core</node>
+    <node x="581.0" y="1446.0">org.openjfx.core</node>
     <node x="886.0" y="0.0">org.openjfx.NotificationController</node>
-    <node x="459.0" y="0.0">org.openjfx.ImageListController</node>
-    <node x="264.0" y="1064.0">org.openjfx.ScreenController</node>
-    <node x="829.0" y="1064.0">org.openjfx.Notification</node>
-    <node x="0.0" y="1064.0">org.openjfx.ImageDetailController</node>
+    <node x="1350.0" y="1064.0">org.openjfx.ImageGeoMap</node>
+    <node x="323.0" y="1064.0">org.openjfx.ScreenController</node>
     <node x="0.0" y="0.0">org.openjfx.ImageListHandlersController</node>
-    <node x="577.0" y="1064.0">org.openjfx.ImageListHandlers</node>
-    <node x="1046.0" y="1064.0">org.openjfx.ImageDetail</node>
+    <node x="881.0" y="1064.0">org.openjfx.ImageListHandlers</node>
+    <node x="0.0" y="1446.0">org.openjfx.ImageDetail</node>
+    <node x="406.0" y="1446.0">org.openjfx.images</node>
+    <node x="210.0" y="1446.0">org.openjfx.ImageList</node>
+    <node x="0.0" y="1064.0">org.openjfx.App</node>
+    <node x="459.0" y="0.0">org.openjfx.ImageListController</node>
+    <node x="1133.0" y="1064.0">org.openjfx.Notification</node>
+    <node x="636.0" y="1064.0">org.openjfx.ImageGeoMapController</node>
+    <node x="1219.0" y="0.0">org.openjfx.ImageDetailController</node>
   </nodes>
   <notes />
   <edges />
-  <settings layout="Hierarchic Group" zoom="1.0" x="413.0" y="372.5" />
+  <settings layout="Hierarchic Group" zoom="1.0" x="345.0" y="1220.5" />
   <SelectedNodes>
-    <node>org.openjfx.images</node>
+    <node>org.openjfx.core</node>
   </SelectedNodes>
   <Categories>
     <Category>Fields</Category>
+    <Category>Constructors</Category>
     <Category>Methods</Category>
     <Category>Inner Classes</Category>
   </Categories>
