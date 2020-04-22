@@ -35,26 +35,26 @@ public class App extends Application {
     public static Desktop desktop = Desktop.getDesktop();
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stg) throws IOException {
 
         Parent imageListScene = loadFXML(ComponentEnum.ImageList);
         scene = new Scene(imageListScene, 800, 600);
 
         // init all screens
-        ScreenController screenController = new ScreenController(scene, stage);
-        screenController.addScreen(ComponentEnum.ImageList.toString(), imageListScene);
-        screenController.addScreen(ComponentEnum.ImageDetail.toString(), loadFXML(ComponentEnum.ImageDetail));
-        screenController.addScreen(ComponentEnum.ImageGeoMap.toString(), loadFXML(ComponentEnum.ImageGeoMap));
+        ScreenController sc = new ScreenController(scene, stg);
+        sc.addScreen(ComponentEnum.ImageList.toString(), imageListScene);
+        sc.addScreen(ComponentEnum.ImageDetail.toString(), loadFXML(ComponentEnum.ImageDetail));
+        sc.addScreen(ComponentEnum.ImageGeoMap.toString(), loadFXML(ComponentEnum.ImageGeoMap));
 
-        this.screenController = screenController;
+        screenController = sc;
 
-        stage.setScene(scene);
+        stg.setScene(scene);
 
         // load bootstrap css
         scene.getStylesheets().add("org/kordamp/bootstrapfx/bootstrapfx.css");
-        stage.sizeToScene();
-        stage.show();
-        this.stage = stage;
+        stg.sizeToScene();
+        stg.show();
+        stage = stg;
     }
 
 

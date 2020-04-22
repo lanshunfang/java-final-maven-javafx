@@ -1,0 +1,15 @@
+// A launch configuration that compiles the extension and then opens it inside a new window
+// mvn package
+// mvnDebug exec:java -Dexec.mainClass="org.openjfx.App"
+{
+    "version": "0.1.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Attach Maven on `mvn package; mvnDebug exec:java -Dexec.mainClass=\"org.openjfx.App\"`",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": 8000
+        }
+    ]
+}

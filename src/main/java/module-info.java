@@ -1,8 +1,10 @@
 module javafinalmsis2020 {
     requires javafx.controls;
+    requires transitive javafx.graphics;
     requires javafx.fxml;
+    requires transitive java.desktop;
+
     requires java.datatransfer;
-    requires java.desktop;
     requires java.logging;
     requires javafx.swing;
     requires org.kordamp.bootstrapfx.core;
@@ -14,4 +16,5 @@ module javafinalmsis2020 {
 
     opens org.openjfx to javafx.fxml;
     exports org.openjfx;
+    
 }
